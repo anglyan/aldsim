@@ -28,7 +28,11 @@ class Precursor:
         return calc_vth(self.mass, T)
     
     def Jwall(self, T, p, in_mols=False):
-        """Calculate the flux per unit area for a given temperature (in K) and pressure (in Pa)"""
+        """Calculate the flux per unit area for a given temperature (in K) and pressure (in Pa)
+        
+        If in_mols is True returns the mols per surface area, otherwise it returns the molecules per
+        surface area impinging on a surface
+        """
         if in_mols:
             return 0.25*self.vth(T)*p/(Rgas*T)
         else:
@@ -77,7 +81,7 @@ class SurfaceKinetics:
     @property
     def f(self):
         """Fraction of reactive sites"""
-        self._f 
+        return self._f 
 
     @f.setter
     def f(self, value):
@@ -103,8 +107,8 @@ class ALDideal(SurfaceKinetics):
 
     name = 'ideal'
 
-    def __init__(self, prec, nsites, beta0, f=1, dm=1):
-        self.beta0 = beta0
+    def __init__(self, prec, nsites, prob0, f=1, dm=1):
+        self.beta0 = prob0
         self.dm = dm
         super().__init__(prec, nsites, f)
 
