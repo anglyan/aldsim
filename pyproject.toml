@@ -5,7 +5,33 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
-[tool.pytest.ini_options]
-addopts = [
-    "--import-mode=importlib",
+[project]
+name = "aldsim"
+authors = [
+{ name="Angel Yanguas-Gil", email="angel.yanguas@gmail.com"}]
+version = "0.0.3"
+description = "Simple models for atomic layer deposition"
+readme = {file = "README.md", content-type = "text/markdown"}
+keywords = ["atomic layer deposition", "transport models", "microelectronics", "ALD",
+    "atomic scale processing", "plasma", "thin films"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy",
+    "scipy"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/anglyan/aldsim"
+"Bug Tracker" = "https://github.com/anglyan/aldsim/issues"
+Documentation = "https://aldsim.readthedocs.io/en/latest/"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+test = [
+    "pytest",
 ]
