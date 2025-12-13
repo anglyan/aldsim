@@ -88,10 +88,10 @@ class SurfaceKinetics:
         self._f = value
         self._nsites = self._f/self._s0
 
-    def sprob(self, *args):
+    def sticking_prob(self, *args):
         pass
 
-    def sprob_av(self, *args):
+    def sticking_prob_av(self, *args):
         pass
 
     def vth(self, T):
@@ -101,26 +101,33 @@ class SurfaceKinetics:
         return self.prec.Jwall(T, p)
 
         
-
 class ALDideal(SurfaceKinetics):
     """Ideal first-order irreversible Langmuir kinetics"""
 
     name = 'ideal'
 
-    def __init__(self, prec, nsites, prob0, f=1, dm=1):
-        self.sprob0 = prob0
+    def __init__(self, prec, nsites, p_stick, p_rec0=0, p_rec1=0, f=1, dm=1):
+        self.p_stick0 = p_stick
+        self.p_rec0 = p_rec0
+        self.p_rec1 = p_rec1
         self.dm = dm
         super().__init__(prec, nsites, f)
 
-    def sprob(self, cov=0):
-        return self.f*self.sprob0*(1-cov)
+    def sticking_prob(self, cov=0):
+        return self.f*self.p_stick0*(1-cov)
 
-    def sprob_av(self, av):
-        return self.f*self.sprob0*av
+    def recomb_prob(self, cov=0):
+        return self.p_rec0 + self.f*cov*(self.p_rec1-self.p_rec0)
+    
+    def react_prob(self, cov=0):
+        return self.sticking_prob(cov) + self.recomb_prob(cov)
+
+    def sticking_prob_av(self, av):
+        return self.f*self.p_stick0*av
     
     def t0(self, T, p):
         """Characteristic time for saturation"""
-        return 1.0/(self.site_area*self.Jwall(T, p)*self.sprob0)
+        return 1.0/(self.site_area*self.Jwall(T, p)*self.p_stick0)
     
     def saturation_curve(self, T, p):
         """Return the saturation curve as a (time, coverage) tuple """

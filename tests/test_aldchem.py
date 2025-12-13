@@ -29,7 +29,7 @@ class TestALDideal:
     def test_init_basic(self):
         p = Precursor(mass=100)
         ald = ALDideal(p, 1e19, 0.001)
-        assert ald.sprob0 == 0.001
+        assert ald.p_stick0 == 0.001
         assert ald.dm == 1
         assert ald.f == 1
 
@@ -37,7 +37,7 @@ class TestALDideal:
         p = Precursor(mass=100)
         ald = ALDideal(p, 1e19, 0.001, f=0.8)
         assert ald.f == 0.8
-        assert ald.sprob0 == 0.001
+        assert ald.p_stick0 == 0.001
 
     def test_init_with_custom_dm(self):
         p = Precursor(mass=100)
@@ -49,40 +49,40 @@ class TestALDideal:
         ald = ALDideal(p, 1e19, 0.001)
         assert ald.site_area == pytest.approx(1e-19)
 
-    def test_sprob_zero_coverage(self):
+    def test_sticking_prob_zero_coverage(self):
         p = Precursor(mass=100)
         ald = ALDideal(p, 1e19, 0.001)
         # At zero coverage, sprob = f*sprob0
         expected = 1.0 * 0.001
-        assert ald.sprob(0) == pytest.approx(expected)
+        assert ald.sticking_prob(0) == pytest.approx(expected)
 
-    def test_sprob_partial_coverage(self):
+    def test_sticking_prob_partial_coverage(self):
         p = Precursor(mass=100)
         ald = ALDideal(p, 1e19, 0.001)
         # At partial coverage cov=0.5
         expected = 1.0 * 0.001 * (1-0.5)
-        assert ald.sprob(0.5) == pytest.approx(expected)
+        assert ald.sticking_prob(0.5) == pytest.approx(expected)
 
-    def test_sprob_full_coverage(self):
+    def test_sticking_prob_full_coverage(self):
         p = Precursor(mass=100)
         ald = ALDideal(p, 1e19, 0.001)
         # At full coverage, sprob should be zero
-        assert ald.sprob(1) == pytest.approx(0)
+        assert ald.sticking_prob(1) == pytest.approx(0)
 
-    def test_sprob_with_fractional_f(self):
+    def test_sticking_prob_with_fractional_f(self):
         p = Precursor(mass=100)
         ald = ALDideal(p, 1e19, 0.001, f=0.8)
         # At zero coverage with f=0.8
         expected = 0.8 * 0.001
-        assert ald.sprob(0) == pytest.approx(expected)
+        assert ald.sticking_prob(0) == pytest.approx(expected)
 
-    def test_sprob_av(self):
+    def test_sticking_prob_av(self):
         p = Precursor(mass=100)
         ald = ALDideal(p, 1e19, 0.001)
         # Test sprob_av with average value
         av = 0.6
         expected = 1.0 * 0.001 * av
-        assert ald.sprob_av(av) == pytest.approx(expected)
+        assert ald.sticking_prob_av(av) == pytest.approx(expected)
 
     def test_t0(self):
         p = Precursor(mass=100)
@@ -91,7 +91,7 @@ class TestALDideal:
         pressure = 100  # Pa
         t0 = ald.t0(T, pressure)
         # Check that t0 is inversely proportional to sprob0
-        expected_t0 = 1.0/(ald.site_area * ald.Jwall(T, pressure) * ald.sprob0)
+        expected_t0 = 1.0/(ald.site_area * ald.Jwall(T, pressure) * ald.p_stick0)
         assert t0 == pytest.approx(expected_t0)
         # t0 should be positive
         assert t0 > 0
