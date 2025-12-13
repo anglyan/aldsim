@@ -88,10 +88,10 @@ class SurfaceKinetics:
         self._f = value
         self._nsites = self._f/self._s0
 
-    def beta(self, *args):
+    def sprob(self, *args):
         pass
 
-    def beta_av(self, *args):
+    def sprob_av(self, *args):
         pass
 
     def vth(self, T):
@@ -108,19 +108,19 @@ class ALDideal(SurfaceKinetics):
     name = 'ideal'
 
     def __init__(self, prec, nsites, prob0, f=1, dm=1):
-        self.beta0 = prob0
+        self.sprob0 = prob0
         self.dm = dm
         super().__init__(prec, nsites, f)
 
-    def beta(self, cov=0):
-        return self.f*self.beta0*(1-cov)
+    def sprob(self, cov=0):
+        return self.f*self.sprob0*(1-cov)
 
-    def beta_av(self, av):
-        return self.f*self.beta0*av
+    def sprob_av(self, av):
+        return self.f*self.sprob0*av
     
     def t0(self, T, p):
         """Characteristic time for saturation"""
-        return 1.0/(self.site_area*self.Jwall(T, p)*self.beta0)
+        return 1.0/(self.site_area*self.Jwall(T, p)*self.sprob0)
     
     def saturation_curve(self, T, p):
         """Return the saturation curve as a (time, coverage) tuple """
@@ -144,9 +144,9 @@ class ALDsoft(SurfaceKinetics):
 
     name = 'softsat'
 
-    def __init__(self, prec, nsites, beta1, beta2, f1, f2=None):
-        self.beta1 = beta1
-        self.beta2 = beta2
+    def __init__(self, prec, nsites, sprob1, sprob2, f1, f2=None):
+        self.sprob1 = sprob1
+        self.sprob2 = sprob2
         self.f1 = f1
         if f2 is None:
             self.f2 = 1-self.f1
@@ -154,16 +154,16 @@ class ALDsoft(SurfaceKinetics):
             self.f2 = f2
         super().__init__(prec, nsites, self.f1+self.f2)
 
-    def beta(self, cov1=0, cov2=0):
-        return self.f1*self.beta1*(1-cov1) + self.f2*self.beta2*(1-cov2)
+    def sprob(self, cov1=0, cov2=0):
+        return self.f1*self.sprob1*(1-cov1) + self.f2*self.sprob2*(1-cov2)
 
-    def beta_av(self, av1, av2):
-        return self.f1*self.beta1*av1 + self.f2*self.beta2*av2
+    def sprob_av(self, av1, av2):
+        return self.f1*self.sprob1*av1 + self.f2*self.sprob2*av2
 
     def t0(self, T, p):
         """Characteristic time for saturation"""
-        t1 = 1.0/(self.site_area*self.Jwall(T, p)*self.beta1)
-        t2 = 1.0/(self.site_area*self.Jwall(T, p)*self.beta2)
+        t1 = 1.0/(self.site_area*self.Jwall(T, p)*self.sprob1)
+        t2 = 1.0/(self.site_area*self.Jwall(T, p)*self.sprob2)
         return t1, t2
     
     def saturation_curve(self, T, p):

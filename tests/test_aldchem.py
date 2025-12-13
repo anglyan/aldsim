@@ -10,16 +10,19 @@ def test_precursor():
     assert c.name == 'TMA'
         
 
-def test_surfacekinetics():
-    p = Precursor(mass=100)
-    k = SurfaceKinetics(p, 1e19, 1)
-    assert k.site_area == pytest.approx(1e-19)
+class TestSurfaceKinetics:
 
-def test_surfacekinupdate():
-    p = Precursor(mass=100)
-    k = SurfaceKinetics(p, 1e19, 1)
-    k.site_area = 1e-18
-    assert k.nsites == pytest.approx(1e18)
+    def test_surfacekinetics(self):
+        p = Precursor(mass=100)
+        k = SurfaceKinetics(p, 1e19, 1)
+        assert k.site_area == pytest.approx(1e-19)
+
+    def test_surfacekinupdate(self):
+        p = Precursor(mass=100)
+        k = SurfaceKinetics(p, 1e19, 1)
+        k.site_area = 1e-18
+        assert k.nsites == pytest.approx(1e18)
+
 
 def test_aldideal():
     p = Precursor(mass=100)
@@ -34,3 +37,75 @@ class TestSoftSaturating:
         assert k.site_area == pytest.approx(1e-19)
         k.site_area = 1e-18
         assert k.nsites == pytest.approx(1e18)
+
+    def test_init_with_explicit_f2(self):
+        p = Precursor(mass=100)
+        k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
+        assert k.f1 == 0.8
+        assert k.f2 == 0.2
+        assert k.sprob1 == 1e-2
+        assert k.sprob2 == 1e-3
+
+    def test_init_with_implicit_f2(self):
+        p = Precursor(mass=100)
+        k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8)
+        assert k.f1 == 0.8
+        assert k.f2 == pytest.approx(0.2)
+        assert k.f == pytest.approx(1.0)
+
+    def test_sprob_zero_coverage(self):
+        p = Precursor(mass=100)
+        k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
+        # At zero coverage, sprob = f1*sprob1 + f2*sprob2
+        expected = 0.8 * 1e-2 + 0.2 * 1e-3
+        assert k.sprob(0, 0) == pytest.approx(expected)
+
+    def test_sprob_partial_coverage(self):
+        p = Precursor(mass=100)
+        k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
+        # At partial coverage cov1=0.5, cov2=0.3
+        expected = 0.8 * 1e-2 * (1-0.5) + 0.2 * 1e-3 * (1-0.3)
+        assert k.sprob(0.5, 0.3) == pytest.approx(expected)
+
+    def test_sprob_full_coverage(self):
+        p = Precursor(mass=100)
+        k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
+        # At full coverage, sprob should be zero
+        assert k.sprob(1, 1) == pytest.approx(0)
+
+    def test_sprob_av(self):
+        p = Precursor(mass=100)
+        k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
+        # Test sprob_av with average values
+        av1, av2 = 0.6, 0.4
+        expected = 0.8 * 1e-2 * av1 + 0.2 * 1e-3 * av2
+        assert k.sprob_av(av1, av2) == pytest.approx(expected)
+
+    def test_t0(self):
+        p = Precursor(mass=100)
+        k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
+        T = 300  # K
+        pressure = 100  # Pa
+        t1, t2 = k.t0(T, pressure)
+        # t1 should be smaller than t2 (since sprob1 > sprob2)
+        assert t1 < t2
+        # Check that t1 is inversely proportional to sprob1
+        expected_t1 = 1.0/(k.site_area * k.Jwall(T, pressure) * k.sprob1)
+        expected_t2 = 1.0/(k.site_area * k.Jwall(T, pressure) * k.sprob2)
+        assert t1 == pytest.approx(expected_t1)
+        assert t2 == pytest.approx(expected_t2)
+
+    def test_saturation_curve(self):
+        p = Precursor(mass=100)
+        k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
+        T = 300  # K
+        pressure = 100  # Pa
+        t, cov = k.saturation_curve(T, pressure)
+        # Check that time array is monotonically increasing
+        assert all(t[i] < t[i+1] for i in range(len(t)-1))
+        # Check that coverage starts near zero and increases
+        assert cov[0] < 0.1
+        # Check that coverage is bounded between 0 and 1
+        assert all(0 <= c <= 1 for c in cov)
+        # Check that coverage increases monotonically
+        assert all(cov[i] <= cov[i+1] for i in range(len(cov)-1))
