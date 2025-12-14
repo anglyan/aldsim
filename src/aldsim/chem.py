@@ -1,5 +1,19 @@
 #Copyright © 2024-2025, UChicago Argonne, LLC
 
+"""
+Classes for modeling self-limited surface processes.
+
+This module implements the core chemistry models for atomic layer deposition (ALD)
+and other self-limited surface reactions. The primary classes are:
+
+- **Precursor**: Defines precursor molecules with properties like mass and thermal velocity
+- **ALDideal**: Ideal first-order Langmuir kinetics with single sticking probability
+- **ALDsoft**: Dual-pathway Langmuir kinetics for modeling soft saturation behavior
+
+These classes provide the foundation for simulating coverage-dependent surface kinetics,
+saturation curves, and characteristic timescales of self-limited processes.
+"""
+
 from .aldutils import calc_vth
 from .constants import kb, Rgas, Nav
 
