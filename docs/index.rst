@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to aldsim's documentation!
-==================================
+aldsim's documentation
+======================
 
 aldsim provides a suite of simple models for atomic layer deposition
 processes.
@@ -44,6 +44,7 @@ Through pypi::
 
    pip install aldsim
 
+Alternatively, it can be directly installed from its github repository: https://github.com/anglyan/aldsim
 
 Acknowledgements
 ----------------
@@ -66,7 +67,6 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    intro
    api

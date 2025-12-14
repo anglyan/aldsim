@@ -22,6 +22,6 @@ aldsim implements four particle coating models for atomic layer deposition (ALD)
 
 All models assume first-order irreversible Langmuir kinetics with reaction rates characterized by a Damkohler number (Da). Each class provides methods to calculate surface coverage, generate saturation curves, and run full simulations over normalized time or residence time.
 
-These models are described in the paper: [*Modeling scale up of particle coating by atomic layer deposition*](https://doi.org/10.1116/6.0004006)
+These models are described in the paper: *Modeling scale up of particle coating by atomic layer deposition* (https://doi.org/10.1116/6.0004006)
 by Angel Yanguas-Gil and Jeffrey W. Elam, Journal of Vacuum Science and Technology A 43, 012404 (2025). Please cite this work if
 you use any of these models in your research.
