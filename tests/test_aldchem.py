@@ -128,8 +128,8 @@ class TestSoftSaturating:
         k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
         assert k.f1 == 0.8
         assert k.f2 == 0.2
-        assert k.sprob1 == 1e-2
-        assert k.sprob2 == 1e-3
+        assert k.p_stick1 == 1e-2
+        assert k.p_stick2 == 1e-3
 
     def test_init_with_implicit_f2(self):
         p = Precursor(mass=100)
@@ -138,33 +138,33 @@ class TestSoftSaturating:
         assert k.f2 == pytest.approx(0.2)
         assert k.f == pytest.approx(1.0)
 
-    def test_sprob_zero_coverage(self):
+    def test_sticking_prob_zero_coverage(self):
         p = Precursor(mass=100)
         k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
-        # At zero coverage, sprob = f1*sprob1 + f2*sprob2
+        # At zero coverage, sticking_prob = f1*p_stick1 + f2*p_stick2
         expected = 0.8 * 1e-2 + 0.2 * 1e-3
-        assert k.sprob(0, 0) == pytest.approx(expected)
+        assert k.sticking_prob(0, 0) == pytest.approx(expected)
 
-    def test_sprob_partial_coverage(self):
+    def test_sticking_prob_partial_coverage(self):
         p = Precursor(mass=100)
         k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
         # At partial coverage cov1=0.5, cov2=0.3
         expected = 0.8 * 1e-2 * (1-0.5) + 0.2 * 1e-3 * (1-0.3)
-        assert k.sprob(0.5, 0.3) == pytest.approx(expected)
+        assert k.sticking_prob(0.5, 0.3) == pytest.approx(expected)
 
-    def test_sprob_full_coverage(self):
+    def test_sticking_prob_full_coverage(self):
         p = Precursor(mass=100)
         k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
-        # At full coverage, sprob should be zero
-        assert k.sprob(1, 1) == pytest.approx(0)
+        # At full coverage, sticking_prob should be zero
+        assert k.sticking_prob(1, 1) == pytest.approx(0)
 
-    def test_sprob_av(self):
+    def test_sticking_prob_av(self):
         p = Precursor(mass=100)
         k = ALDsoft(p, 1e19, 1e-2, 1e-3, 0.8, 0.2)
-        # Test sprob_av with average values
+        # Test sticking_prob_av with average values
         av1, av2 = 0.6, 0.4
         expected = 0.8 * 1e-2 * av1 + 0.2 * 1e-3 * av2
-        assert k.sprob_av(av1, av2) == pytest.approx(expected)
+        assert k.sticking_prob_av(av1, av2) == pytest.approx(expected)
 
     def test_t0(self):
         p = Precursor(mass=100)
@@ -172,11 +172,11 @@ class TestSoftSaturating:
         T = 300  # K
         pressure = 100  # Pa
         t1, t2 = k.t0(T, pressure)
-        # t1 should be smaller than t2 (since sprob1 > sprob2)
+        # t1 should be smaller than t2 (since p_stick1 > p_stick2)
         assert t1 < t2
-        # Check that t1 is inversely proportional to sprob1
-        expected_t1 = 1.0/(k.site_area * k.Jwall(T, pressure) * k.sprob1)
-        expected_t2 = 1.0/(k.site_area * k.Jwall(T, pressure) * k.sprob2)
+        # Check that t1 is inversely proportional to p_stick1
+        expected_t1 = 1.0/(k.site_area * k.Jwall(T, pressure) * k.p_stick1)
+        expected_t2 = 1.0/(k.site_area * k.Jwall(T, pressure) * k.p_stick2)
         assert t1 == pytest.approx(expected_t1)
         assert t2 == pytest.approx(expected_t2)
 
