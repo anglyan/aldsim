@@ -33,9 +33,8 @@ This is an example of how to use the `FluidizedBed` class to
 compute saturation curve for a given value of the Damkohler number:
 
 .. code-block:: python
-
     :linenos:
-    
+
     import matplotlib.pyplot as plt
     from aldsim.core.particle import FluidizedBed
 
