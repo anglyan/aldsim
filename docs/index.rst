@@ -20,6 +20,17 @@ various contexts and reactor configurations.
 It has grown from a collection of papers that we have published over
 the past 10 years.
 
+Basic structure
+---------------
+
+aldsim provides two separate functionalities: its `core` module contains
+various models implemented using nondimensional variables. These models
+highlight some of the scaling laws in atomic layer deposition. 
+
+Through its chem module, it applies the models in `core` to various idealized
+models of self-limited surface kinetics.
+
+
 Status
 ------
 
@@ -56,8 +67,10 @@ Contents
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   
+
+   intro
    api
+   core
 
 
 Indices and tables
