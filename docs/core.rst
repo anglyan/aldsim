@@ -25,3 +25,30 @@ All models assume first-order irreversible Langmuir kinetics with reaction rates
 These models are described in the paper: *Modeling scale up of particle coating by atomic layer deposition* (https://doi.org/10.1116/6.0004006)
 by Angel Yanguas-Gil and Jeffrey W. Elam, Journal of Vacuum Science and Technology A 43, 012404 (2025). Please cite this work if
 you use any of these models in your research.
+
+Example
+-------
+
+This is an example of how to use the `FluidizedBed` class to
+compute saturation curve for a given value of the Damkohler number:
+
+.. code-block:: python
+    import matplotlib.pyplot as plt
+    from aldsim.core.particle import FluidizedBed
+
+    # Create a FluidizedBed instance with Damkohler number = 1
+    fb = FluidizedBed(Da=1.0)
+
+    # Calculate the saturation curve
+    t, coverage = fb.saturation_curve(tmax=5, dt=0.01)
+
+    # Plot the saturation curve
+    plt.figure(figsize=(8, 6))
+    plt.plot(t, coverage, 'b-', linewidth=2, label='Da = 1.0')
+    plt.xlabel('Normalized Dose Time', fontsize=12)
+    plt.ylabel('Surface Coverage', fontsize=12)
+    plt.title('Saturation Curve for Fluidized Bed ALD', fontsize=14)
+    plt.grid(True, alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
