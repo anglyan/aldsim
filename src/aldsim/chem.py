@@ -337,7 +337,90 @@ class ALDideal(SurfaceKinetics):
 
 
 class ALDsoft(SurfaceKinetics):
-    """First-order irreversible Langmuir kinetics with two reaction pathways"""
+    """
+    First-order irreversible Langmuir kinetics with two independent reaction pathways.
+
+    This class extends the ideal ALD kinetics model to account for surface heterogeneity
+    by considering two distinct types of reactive sites, each with different sticking
+    probabilities. This dual-pathway model is useful for describing "soft saturation"
+    behavior where different surface sites saturate at different rates.
+
+    The model assumes:
+    - Two independent populations of reactive sites (pathway 1 and pathway 2)
+    - First-order Langmuir adsorption kinetics for each pathway
+    - Self-limiting surface reactions on both pathways
+    - Each pathway has uniform reactive sites with equal surface area
+    - The fraction of unreactive sites is given by: f_unreactive = 1 - (f1 + f2)
+
+    The main difference from ALDideal is that ALDsoft considers two separate reaction
+    pathways with independent coverage evolution. f1 and f2 are the fractions of the
+    surface sites for each pathway. Normally f1 + f2 = 1 unless there is a fraction
+    of unreactive sites.
+
+    Parameters
+    ----------
+    prec : Precursor
+        The precursor molecule for this half-reaction. Contains properties like
+        molecular mass needed to calculate thermal velocity and wall flux.
+    nsites : float
+        Number of reactive sites per unit surface area (sites/m²) for each pathway.
+        This determines the site area via the relationship: site_area = (f1 + f2) / nsites.
+    p_stick1 : float
+        Sticking probability (0 ≤ p_stick1 ≤ 1) for precursor molecules interacting
+        with bare reactive sites on pathway 1. Represents the probability that a
+        gas-phase molecule chemisorbs upon collision with an unreacted site of type 1.
+    p_stick2 : float
+        Sticking probability (0 ≤ p_stick2 ≤ 1) for precursor molecules interacting
+        with bare reactive sites on pathway 2. Typically p_stick2 ≠ p_stick1,
+        leading to different saturation timescales for each pathway.
+    f1 : float
+        Fraction of the surface covered by pathway 1 reactive sites (0 < f1 ≤ 1).
+        This represents the population of sites with sticking probability p_stick1.
+    f2 : float, optional
+        Fraction of the surface covered by pathway 2 reactive sites (0 < f2 ≤ 1).
+        If not provided, defaults to (1 - f1), assuming no unreactive sites.
+        For surfaces with unreactive sites, set f2 explicitly such that f1 + f2 < 1.
+
+    Attributes
+    ----------
+    name : str
+        Identifier for this kinetics model type ('softsat')
+    p_stick1 : float
+        Sticking probability for pathway 1 sites
+    p_stick2 : float
+        Sticking probability for pathway 2 sites
+    f1 : float
+        Fraction of pathway 1 sites
+    f2 : float
+        Fraction of pathway 2 sites
+
+    Methods
+    -------
+    sticking_prob(cov1=0, cov2=0)
+        Calculate the total coverage-dependent sticking probability from both pathways
+    sticking_prob_av(av1, av2)
+        Calculate the average sticking probability based on site availability
+    t0(T, p)
+        Calculate the characteristic saturation times for both pathways
+    saturation_curve(T, p)
+        Generate the time-dependent saturation curve combining both pathways
+
+    Examples
+    --------
+    >>> tma = Precursor('TMA', mass=144.17)
+    >>> # Surface with 60% fast-reacting sites and 40% slow-reacting sites
+    >>> kinetics = ALDsoft(prec=tma, nsites=1e19, p_stick1=0.2, p_stick2=0.02,
+    ...                    f1=0.6, f2=0.4)
+    >>> # Calculate sticking probability with 50% coverage on pathway 1, 20% on pathway 2
+    >>> s = kinetics.sticking_prob(cov1=0.5, cov2=0.2)
+    >>> # Get characteristic times for both pathways at 200°C and 100 Pa
+    >>> t1, t2 = kinetics.t0(T=473.15, p=100)
+    >>>
+    >>> # Example with unreactive sites (10% of surface is unreactive)
+    >>> kinetics_partial = ALDsoft(prec=tma, nsites=1e19, p_stick1=0.2,
+    ...                            p_stick2=0.05, f1=0.7, f2=0.2)
+    >>> # Here f1 + f2 = 0.9, meaning 10% of the surface is unreactive
+    """
 
     name = 'softsat'
 
@@ -352,19 +435,116 @@ class ALDsoft(SurfaceKinetics):
         super().__init__(prec, nsites, self.f1+self.f2)
 
     def sticking_prob(self, cov1=0, cov2=0):
+        """
+        Calculate the total coverage-dependent sticking probability from both pathways.
+
+        The total sticking probability is the sum of contributions from both pathways,
+        each decreasing linearly with their respective coverage:
+        S_total(θ1, θ2) = f1 * p_stick1 * (1 - θ1) + f2 * p_stick2 * (1 - θ2)
+
+        This allows the two pathways to saturate independently at different rates,
+        producing the characteristic "soft saturation" behavior.
+
+        Parameters
+        ----------
+        cov1 : float, optional
+            Surface coverage on pathway 1 sites (0 ≤ cov1 ≤ 1, default: 0).
+            Represents the fraction of pathway 1 reactive sites that have reacted.
+        cov2 : float, optional
+            Surface coverage on pathway 2 sites (0 ≤ cov2 ≤ 1, default: 0).
+            Represents the fraction of pathway 2 reactive sites that have reacted.
+
+        Returns
+        -------
+        float
+            Total sticking probability at the given coverages
+        """
         return self.f1*self.p_stick1*(1-cov1) + self.f2*self.p_stick2*(1-cov2)
 
     def sticking_prob_av(self, av1, av2):
+        """
+        Calculate the average sticking probability based on site availability for both pathways.
+
+        This method computes the total sticking probability based on site availability
+        rather than coverage for each pathway. Useful for certain averaging schemes
+        in simulations.
+
+        Parameters
+        ----------
+        av1 : float
+            Fraction of available sites on pathway 1 (0 ≤ av1 ≤ 1). Represents the
+            fraction of pathway 1 sites available for reaction.
+        av2 : float
+            Fraction of available sites on pathway 2 (0 ≤ av2 ≤ 1). Represents the
+            fraction of pathway 2 sites available for reaction.
+
+        Returns
+        -------
+        float
+            Total average sticking probability from both pathways
+        """
         return self.f1*self.p_stick1*av1 + self.f2*self.p_stick2*av2
 
     def t0(self, T, p):
-        """Characteristic time for saturation"""
+        """
+        Calculate the characteristic saturation times for both pathways.
+
+        Each pathway has its own characteristic time representing the timescale for
+        saturation under ideal first-order Langmuir kinetics:
+        t0_i = 1 / (site_area * J_wall * p_stick_i)
+
+        where J_wall is the molecular flux to the wall and i = 1 or 2.
+
+        The difference between t1 and t2 determines the extent of soft saturation
+        behavior. Large differences lead to more pronounced multi-step saturation curves.
+
+        Parameters
+        ----------
+        T : float
+            Temperature in Kelvin
+        p : float
+            Precursor partial pressure in Pascals
+
+        Returns
+        -------
+        tuple of float
+            (t1, t2) where:
+            - t1: Characteristic saturation time for pathway 1 in seconds
+            - t2: Characteristic saturation time for pathway 2 in seconds
+        """
         t1 = 1.0/(self.site_area*self.Jwall(T, p)*self.p_stick1)
         t2 = 1.0/(self.site_area*self.Jwall(T, p)*self.p_stick2)
         return t1, t2
-    
+
     def saturation_curve(self, T, p):
-        """Return the saturation curve as a (time, coverage) tuple """
+        """
+        Generate the time-dependent saturation curve combining both pathways.
+
+        Calculates the total coverage evolution over time as a weighted sum of two
+        independent first-order Langmuir processes:
+        θ_total(t) = [f1*(1 - exp(-t/t1)) + f2*(1 - exp(-t/t2))] / (f1 + f2)
+
+        The resulting curve exhibits soft saturation behavior when t1 ≠ t2, with an
+        initial fast saturation phase (dominated by the faster pathway) followed by
+        a slower approach to complete saturation.
+
+        The method automatically determines an appropriate time range based on
+        the slower of the two characteristic saturation times.
+
+        Parameters
+        ----------
+        T : float
+            Temperature in Kelvin
+        p : float
+            Precursor partial pressure in Pascals
+
+        Returns
+        -------
+        tuple of ndarray
+            (time, coverage) arrays where:
+            - time: Array of time points in seconds
+            - coverage: Array of corresponding total coverage values (0 to 1)
+        """
         t1, t2 = self.t0(T,p)
         t0 = max(t1, t2)
         tscale = 5*t0
