@@ -1,10 +1,8 @@
-Introduction to Atomic Layer Deposition
-========================================
+# Introduction to Atomic Layer Deposition
 
 Atomic layer deposition (ALD) is a thin film growth technique based on sequential, self-limiting surface reactions. Unlike conventional chemical vapor deposition (CVD), ALD achieves precise thickness control at the atomic scale through cyclic exposure of precursor gases.
 
-ALD Process
------------
+## ALD Process
 
 A typical ALD cycle consists of four steps:
 
@@ -15,23 +13,21 @@ A typical ALD cycle consists of four steps:
 
 The self-limiting nature of each half-reaction ensures that film growth is controlled by the number of cycles rather than process parameters like temperature or pressure, enabling conformal coating on complex geometries.
 
-Key Characteristics
--------------------
+## Key Characteristics
 
 **Self-limiting growth**
-    Each precursor reacts only with available surface sites, preventing multilayer formation in a single exposure
+: Each precursor reacts only with available surface sites, preventing multilayer formation in a single exposure
 
 **Conformal coverage**
-    The sequential nature and surface-controlled kinetics enable uniform coating of high-aspect-ratio structures and porous materials
+: The sequential nature and surface-controlled kinetics enable uniform coating of high-aspect-ratio structures and porous materials
 
 **Precise thickness control**
-    Film thickness is determined by growth-per-cycle multiplied by the number of cycles, typically in the range of 0.5-3 Angstroms per cycle
+: Film thickness is determined by growth-per-cycle multiplied by the number of cycles, typically in the range of 0.5-3 Angstroms per cycle
 
 **Wide temperature window**
-    ALD operates within a temperature range where surface reactions are thermodynamically favorable but precursor decomposition is minimal
+: ALD operates within a temperature range where surface reactions are thermodynamically favorable but precursor decomposition is minimal
 
-Applications
-------------
+## Applications
 
 ALD has become essential in numerous fields:
 
@@ -40,8 +36,7 @@ ALD has become essential in numerous fields:
 - **Catalysis**: Synthesis of highly dispersed catalysts with precise control over active site distribution
 - **Particle coating**: Functional coatings on powders for applications in energy storage, catalysis, and decarbonization
 
-Modeling Challenges
--------------------
+## Modeling Challenges
 
 While the self-limiting nature of ALD simplifies some aspects of modeling, practical ALD processes present several challenges:
 

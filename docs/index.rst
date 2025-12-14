@@ -68,9 +68,9 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   intro
+   intro.md
+   core.md
    api
-   core
 
 
 Indices and tables
