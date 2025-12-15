@@ -25,6 +25,7 @@ extensions = ['sphinx.ext.autodoc',
               'myst_parser']
 
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
+toc_object_entries = False
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
