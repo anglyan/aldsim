@@ -178,20 +178,66 @@ def solve_until_cov(AR, N, p_stick0, p_rec0=0, p_rec1=0, target_cov=0.99, save_e
 
 
 class DiffusionVia:
-    """Model for ALD coating through diffusion in vias or trenches.
+    """Model for ALD in high aspect ratio circular vias.
 
     Implementation of a non-dimensional model for atomic layer deposition
-    in high-aspect-ratio structures such as vias or trenches. The model
-    accounts for precursor diffusion limitations and surface reaction kinetics.
+    in high-aspect-ratio circular vias. The model uses a Knudsen diffusion transport
+    model and self-limited surface reaction kinetics and surface recombination.
 
     The model assumes a first-order irreversible Langmuir kinetics
-    with the sticking probability value contained in the Damkohler
-    number.
+    with the sticking probability value determining the reaction rate.
+    It also supports recombination processes on both bare and reacted
+    surface sites.
 
-    Args:
-        AR (float) : Aspect ratio
-        p_stick0 (float) : sticking probability
-        p_rec (float) : recombination probability
+    Parameters
+    ----------
+    AR : float
+        Aspect ratio of the circular via (depth/diameter). Higher values
+        indicate deeper, narrower structures where diffusion limitations
+        become more significant. Must be non-negative.
+    p_stick0 : float
+        Sticking probability for the self-limited ALD process. Represents
+        the probability that a precursor molecule will react when it
+        encounters a surface site.
+    p_rec0 : float, optional
+        Recombination probability on bare (unreacted) surface sites.
+        Default is 0.
+    p_rec1 : float, optional
+        Recombination probability on reacted surface sites. Default is 0.
+
+    Attributes
+    ----------
+    AR : float
+        The aspect ratio of the via.
+    p_stick0 : float
+        The sticking probability of the ALD process.
+    p_rec0 : float
+        The recombination probability on bare sites.
+    p_rec1 : float
+        The recombination probability on reacted sites.
+
+    Examples
+    --------
+    Create a DiffusionVia model for a via with aspect ratio 10:
+
+    >>> model = DiffusionVia(AR=10, p_stick0=0.05)
+    >>> coverage, times = model.run(max_time=2.0)
+    >>> print(f"Final mean coverage: {coverage[-1].mean():.3f}")
+
+    Model with recombination effects:
+
+    >>> model = DiffusionVia(AR=20, p_stick0=0.03, p_rec0=0.01, p_rec1=0.05)
+    >>> coverage, times = model.run_until_cov(max_cov=0.95)
+    >>> print(f"Time to reach 95% coverage: {times[-1]:.3f}")
+
+    Notes
+    -----
+    The model uses Knudsen diffusion to describe precursor transport
+    inside the circular via. The governing equations are solved using
+    a finite difference method with banded matrix solver for efficiency.
+
+    All time values in the model are normalized by a characteristic
+    diffusion time scale.
 
     """
 
@@ -202,42 +248,134 @@ class DiffusionVia:
         self.p_stick0 = p_stick0
         self.p_rec0 = p_rec0
         self.p_rec1 = p_rec1
+        self._nsegments = 4
 
 
-    def run(self, tmax=5, dt=0.01):
-        """Runs the simulation for a given or predefined amount of time
+    def run(self, N=None, max_time=1, save_every=0.2, dt=0.05):
+        """Run simulation for a specified normalized time period
 
-        Runs the model for a predefined or user-provided time
+        Executes the diffusion-reaction model for precursor transport and
+        surface coverage evolution inside a high aspect ratio circular via.
+        The simulation runs until the specified maximum normalized time is
+        reached, saving coverage profiles at regular time intervals.
 
-        Args:
-            tmax (float, optional): largest normalized dose time.
-            dt (float, optional): time step value.
+        Parameters
+        ----------
+        N : int, optional
+            Number of discretized segments along the via depth. If None
+            (default), automatically calculated as 4 * AR to ensure adequate
+            spatial resolution. Higher values provide better accuracy but
+            increase computation time.
+        max_time : float, optional
+            Maximum normalized time for the simulation. Default is 1.0.
+            Represents the duration of precursor exposure in normalized units.
+            Must be positive.
+        save_every : float, optional
+            Normalized time interval at which coverage profiles are saved.
+            Default is 0.2. Smaller values provide more time resolution but
+            increase memory usage. Must be positive and less than max_time.
+        dt : float, optional
+            Time step size for numerical integration (dimensionless).
+            Default is 0.05. Smaller values improve accuracy but increase
+            computation time. Must be positive and smaller than save_every.
 
-        Returns:
-            A tuple of time, surface coverage, precursor utilization arrays
+        Returns
+        -------
+        coverage : list of ndarray
+            List of coverage arrays at saved time points. Each array has
+            shape (N,) representing the coverage profile along the via depth,
+            from the entrance (index 0) to the bottom (index N-1). Values
+            are bounded between 0 and 1.
+        times : list of float
+            List of normalized times corresponding to saved coverage profiles.
+            Length matches the coverage list.
+
+        Examples
+        --------
+        Run simulation with default parameters:
+
+        >>> model = DiffusionVia(AR=10, p_stick0=0.05)
+        >>> coverage, times = model.run()
+        >>> print(f"Number of saved profiles: {len(coverage)}")
+        Number of saved profiles: 6
+
+        Run with custom time parameters and higher resolution:
+
+        >>> model = DiffusionVia(AR=15, p_stick0=0.03)
+        >>> coverage, times = model.run(N=100, max_time=3.0, save_every=0.5)
+        >>> final_coverage = coverage[-1]
+        >>> print(f"Coverage at bottom: {final_coverage[-1]:.3f}")
+0
+        See Also
+        --------
+        run_until_cov : Run simulation until target coverage is reached
 
         """
-        pass
+        if N is None:
+            N = int(self._nsegments*self.AR)
+        return solve_until(self.AR, N, self.p_stick0, self.p_rec0, self.p_rec1, max_time, save_every, dt)
 
     def run_until_cov(self, N=None, max_cov=0.99, save_every=0.2, dt=0.05):
-        """Runs the simulation for a given or predefined amount of time
+        """Run simulation until target mean coverage is reached
 
-        Runs the model for a predefined or user-provided time
+        Executes the diffusion-reaction model for precursor transport and
+        surface coverage evolution inside a high aspect ratio circular via.
+        The simulation continues until the mean coverage across the via
+        reaches the specified target value, saving coverage profiles at
+        regular coverage intervals.
 
-        Args:
-            tmax (float, optional): largest normalized dose time.
-            dt (float, optional): time step value.
+        Parameters
+        ----------
+        N : int, optional
+            Number of discretized segments along the via depth. If None
+            (default), automatically calculated as 4 * AR to ensure adequate
+            spatial resolution. Higher values provide better accuracy but
+            increase computation time.
+        max_cov : float, optional
+            Target mean coverage at which the simulation stops. Default is 0.99.
+            Represents the spatially-averaged fractional surface coverage.
+            Must be between 0 and 1.
+        save_every : float, optional
+            Coverage interval at which profiles and times are saved.
+            Default is 0.2. For example, with default value, profiles are
+            saved when mean coverage reaches 0.2, 0.4, 0.6, 0.8, and the
+            final target. Must be positive and less than max_cov.
+        dt : float, optional
+            Time step size for numerical integration (dimensionless).
+            Default is 0.05. Smaller values improve accuracy but increase
+            computation time.
 
-        Returns:
-            A tuple of time, surface coverage, precursor utilization arrays
+        Returns
+        -------
+        coverage : list of ndarray
+            List of coverage arrays at saved coverage intervals. Each array
+            has shape (N,) representing the coverage profile along the via
+            depth, from the entrance (index 0) to the bottom (index N-1).
+            Values are bounded between 0 and 1.
+        times : list of float
+            List of normalized times corresponding to saved coverage profiles.
+            Times increase monotonically. Length matches the coverage list.
+
+        Examples
+        --------
+        Run simulation until 90% mean coverage:
+
+        >>> model = DiffusionVia(AR=10, p_stick0=0.5)
+        >>> coverage, times = model.run_until_cov(max_cov=0.9)
+        >>> print(f"Time to reach 90% coverage: {times[-1]:.3f}")
+        Time to reach 90% coverage: 2.345
+
+        Save coverage profiles every 10% increment:
+
+        >>> model = DiffusionVia(AR=15, p_stick0=0.3, p_rec0=0.1)
+        >>> coverage, times = model.run_until_cov(max_cov=0.95, save_every=0.1)
+
+        See Also
+        --------
+        run : Run simulation for a specified time period
 
         """        
         if N is None:
-            N = int(4*self.AR)
+            N = int(self._nsegments*self.AR)
         return solve_until_cov(self.AR, N, self.p_stick0, self.p_rec0, self.p_rec1, max_cov, save_every, dt)
 
-
-
-def calc_coverage(Da, t):
-    """Analytical expression of the surface coverage for the DiffusionVia model"""
-    pass

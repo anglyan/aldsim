@@ -36,3 +36,15 @@ SpatialWellMixed
     :members:
     :undoc-members:
     :show-inheritance:
+
+
+ALD in high aspect ratio features
+=================================
+
+DiffusionVia
+------------
+
+.. autoclass:: aldsim.core.diffusion.DiffusionVia
+    :members:
+    :undoc-members:
+    :show-inheritance:
