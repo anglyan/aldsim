@@ -1,48 +1,41 @@
-# Introduction to Atomic Layer Deposition
+# About aldsim
 
-Atomic layer deposition (ALD) is a thin film growth technique based on sequential, self-limiting surface reactions. Unlike conventional chemical vapor deposition (CVD), ALD achieves precise thickness control at the atomic scale through cyclic exposure of precursor gases.
+## Basic structure
 
-## ALD Process
+aldsim provides two separate functionalities: its `core` module contains
+various models implemented using nondimensional variables. These models
+highlight some of the scaling laws in atomic layer deposition. 
 
-A typical ALD cycle consists of four steps:
+Through its chem module, it applies the models in `core` to various idealized
+models of self-limited surface kinetics.
 
-1. **Precursor exposure**: The first precursor is introduced and adsorbs onto the surface through chemisorption
-2. **Purge**: Excess precursor and reaction byproducts are removed
-3. **Co-reactant exposure**: A second precursor reacts with the adsorbed species
-4. **Purge**: The reactor is purged again to complete the cycle
 
-The self-limiting nature of each half-reaction ensures that film growth is controlled by the number of cycles rather than process parameters like temperature or pressure, enabling conformal coating on complex geometries.
+## Status
 
-## Key Characteristics
 
-**Self-limiting growth**
-: Each precursor reacts only with available surface sites, preventing multilayer formation in a single exposure
+`aldsim` is still in development. Over the next few months it will
+be expanded to incorporate a variety of models.
 
-**Conformal coverage**
-: The sequential nature and surface-controlled kinetics enable uniform coating of high-aspect-ratio structures and porous materials
+## Quick install
 
-**Precise thickness control**
-: Film thickness is determined by growth-per-cycle multiplied by the number of cycles, typically in the range of 0.5-3 Angstroms per cycle
+Through pypi:
 
-**Wide temperature window**
-: ALD operates within a temperature range where surface reactions are thermodynamically favorable but precursor decomposition is minimal
+```
+pip install aldsim
+```
 
-## Applications
+Alternatively, it can be directly installed from its github repository: https://github.com/anglyan/aldsim
 
-ALD has become essential in numerous fields:
+## Acknowledgements
 
-- **Microelectronics**: Gate dielectrics, diffusion barriers, and interconnects in advanced semiconductor devices
-- **Energy**: Protective coatings for battery electrodes and photovoltaic materials
-- **Catalysis**: Synthesis of highly dispersed catalysts with precise control over active site distribution
-- **Particle coating**: Functional coatings on powders for applications in energy storage, catalysis, and decarbonization
+* Argonne Laboratory Directed Research and Development program
 
-## Modeling Challenges
+## Copyright and license
 
-While the self-limiting nature of ALD simplifies some aspects of modeling, practical ALD processes present several challenges:
+Copyright © 2024, UChicago Argonne, LLC
 
-- **Precursor transport**: Delivering precursors uniformly to all surfaces, especially in particle beds or high-aspect-ratio features
-- **Kinetics**: Understanding the relationship between dose time, precursor pressure, and surface coverage
-- **Reactor design**: Optimizing reactor configurations for different substrates (wafers, particles, membranes)
-- **Scale-up**: Translating laboratory processes to manufacturing scale
+`aldsim` is distributed under the terms of BSD License. 
 
-The aldsim package addresses these challenges by providing physics-based models for different reactor configurations and transport regimes.
+Argonne Patent & Intellectual Property File Number: SF-24-041
+
+
