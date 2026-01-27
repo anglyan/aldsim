@@ -5,97 +5,107 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
-from .base import IdealDoseModel
+from .base import DoseModel
 from aldsim.constants import kb
-
-class WellStirredND:
-
-    def __init__(self, Da):
-        self.Da = Da
-
-    def calc_coverage(self, tau):
-        ep = 1
-        t = 0.5
-        Da = self.Da
-        damp = 0.1
-        while ep > 1e-6:
-            f_t = self._f_t(t, Da, tau)
-            fp_t = self._fp_t(t, Da, tau)
-            damp = 0.1
-            tn = 1.1
-            while tn > 1 or tn < 0:
-                damp = 0.5*damp
-                tn = t - damp*f_t/fp_t
-            ep = abs(t-tn)/t
-            t = tn
-        return t
-    
-    def _f_t(self, theta, Da, tau):
-        return theta - np.log(1-theta)/Da - tau
-
-    def _fp_t(self, theta, Da, tau):
-        return 1 + 1/(Da*(1-theta))
-
-    def _f(self, t, y):
-        return -y/(1/self.Da+y)
-
-    def run(self, tmax=5, dt=0.01):
-        out = solve_ivp(self._f, [0,tmax], [1], method='LSODA',
-                t_eval=np.arange(0,tmax,dt))
-        cov = 1-out.y[0,:]
-        x = 1/(1+self.Da*out.y[0,:])
-        return out.t, cov, x
-
-    def saturation_curve(self, tmax=5, dt=0.01):
-        t, cov, _ = self.run(tmax, dt)
-        return t, cov
-    
-    def saturation_curve_implicit(self, theta_max=0.9999):
-        Da = self.Da
-        theta = np.arange(0,theta_max,0.0001)
-        tau = theta - np.log(1-theta)/Da
-        return tau, theta
-
-    def fraction_out(self, theta_max=0.999):
-        Da = self.Da
-        theta = np.arange(0,theta_max,0.0001)
-        tau = theta - np.log(1-theta)/Da
-        return tau, 1/(1+Da*(1-theta))
+from aldsim.core.particle import WellMixedParticleND
 
 
-class WellStirred(IdealDoseModel):
+class RotatingDrum(DoseModel):
+    """
+    Model of ALD particle coating in a rotating drum or well-stirred reactor.
+
+    This model simulates the coating of particles in a batch reactor where
+    particles are well-mixed, such as a rotating drum reactor. It assumes
+    uniform precursor concentration throughout the reactor volume and
+    first-order Langmuir kinetics for the surface reactions.
+
+    Parameters
+    ----------
+    chem : ALDchem
+        Surface chemistry object defining the reaction kinetics. Must have
+        a single reaction pathway (single_path=True).
+    p : float
+        Precursor partial pressure in Pa.
+    p0 : float
+        Carrier gas pressure in Pa.
+    T : float
+        Temperature in K.
+    S : float
+        Total surface area of the particles to be coated in m².
+    flow : float
+        Gas flow rate to the reactor in sccm (standard cubic centimeters per minute).
+
+    Attributes
+    ----------
+    S : float
+        Total particle surface area (m²).
+    p0 : float
+        Carrier gas pressure (Pa).
+    flow0 : float
+        Gas flow rate (sccm).
+    base_model : WellMixedParticleND
+        Underlying dimensionless well-mixed particle model.
+
+    Methods
+    -------
+    Da()
+        Calculate the Damkohler number for the reactor.
+    t0()
+        Calculate the characteristic saturation time.
+    saturation_curve()
+        Generate the time-dependent saturation curve.
+    run(tdose=None, dt=None)
+        Run the simulation and return time, coverage, and precursor concentration.
+
+    Raises
+    ------
+    NotImplementedError
+        If chem has more than one reaction pathway.
+    """
 
     def __init__(self, chem, p, p0, T, S, flow):
-        super().__init__(chem, p, T)
+        if not chem.single_path:
+            raise NotImplementedError("RotatingDrum only supports single pathway chemistry")
+        super().__init__(chem, T, p)
         self.S = S
         self.p0 = p0
         self.flow0 = flow
         da = self.Da()
-        self.base_model = WellStirredND(da)
+        self.base_model = WellMixedParticleND(da)
 
     def flow(self):
         return (1e-6*self.flow0/60)*1e5/self.p0*(self.T/300)
 
     def Da(self):
         flow = self.flow()
-        return 0.25*self.S/flow*self.chem.beta()*self.vth
+        return 0.25*self.S/flow*self.chem.sticking_prob()*self.vth
 
     def t0(self):
-        return kb*self.T*self.S/(self.flow()*self.site_area*self.p)
+        return kb*self.T*self.S/(self.flow()*self.chem.site_area*self.p)
 
     def saturation_curve(self):
         self.base_model.Da = self.Da()
         t, cov = self.base_model.saturation_curve()
         return t*self.t0(), cov
     
-    def run(self):
+    def run(self, tdose=None, dt=None):
         self.base_model.Da = self.Da()
-        t, cov, x = self.base_model.run()
+        if tdose is None:
+            t, cov, x = self.base_model.run()
+
+        else:
+            trun = tdose/self.t0()
+            if dt is None:
+                dtrun = 0.01
+            else:
+                dtrun = dt/self.t0()
+            t, cov, x = self.base_model.run(trun, dtrun)
+            
         return t*self.t0(), cov, x
 
 
 
-class ParticlePlugFlow(IdealDoseModel):
+class ParticlePlugFlow(DoseModel):
 
     def __init__(self, chem, p, p0, T, S, flow):
         super().__init__(chem, p, T)

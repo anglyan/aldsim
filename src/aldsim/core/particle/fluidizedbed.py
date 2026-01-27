@@ -2,7 +2,7 @@
 
 import numpy as np
 
-class FluidizedBed:
+class FluidizedBedND:
     """Model for batch fluidized bed reactor under plug flow approximations.
 
     Implementation of a non-dimensional model for particle coating
@@ -30,9 +30,9 @@ class FluidizedBed:
 
     Examples
     --------
-    Create a FluidizedBed model with a Damkohler number of 2.0:
+    Create a FluidizedBedND model with a Damkohler number of 2.0:
 
-    >>> model = FluidizedBed(Da=2.0)
+    >>> model = FluidizedBedND(Da=2.0)
     >>> coverage = model.calc_coverage(t=1.0)
     >>> print(f"Coverage: {coverage:.3f}")
     Coverage: 0.797
@@ -92,7 +92,7 @@ class FluidizedBed:
         --------
         Calculate coverage at the end of dosing (t=1):
 
-        >>> model = FluidizedBed(Da=2.0)
+        >>> model = FluidizedBedND(Da=2.0)
         >>> coverage = model.calc_coverage(t=1.0)
         >>> print(f"Coverage: {coverage:.3f}")
         Coverage: 0.797
@@ -147,7 +147,7 @@ class FluidizedBed:
         --------
         Generate a saturation curve with default parameters:
 
-        >>> model = FluidizedBed(Da=2.0)
+        >>> model = FluidizedBedND(Da=2.0)
         >>> t, coverage = model.saturation_curve()
         >>> print(f"Coverage at t=1: {coverage[100]:.3f}")  # dt=0.01, so index 100 is t=1
         Coverage at t=1: 0.797
@@ -212,7 +212,7 @@ class FluidizedBed:
         --------
         Run a basic simulation with default parameters:
 
-        >>> model = FluidizedBed(Da=2.0)
+        >>> model = FluidizedBedND(Da=2.0)
         >>> t, coverage, precursor = model.run()
         >>> print(f"Final coverage: {coverage[-1]:.3f}")
         Final coverage: 0.993

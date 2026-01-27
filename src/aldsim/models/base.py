@@ -1,7 +1,7 @@
 
-class IdealDoseModel:
+class DoseModel:
 
-    def __init__(self, chem, p, T):
+    def __init__(self, chem, T, p):
         self.chem = chem
         self.p = p
         self.T = T
@@ -18,14 +18,6 @@ class IdealDoseModel:
     @property
     def vth(self):
         return self._vth
-
-    @property
-    def site_area(self):
-        return self.chem.site_area
-    
-    @site_area.setter
-    def site_area(self, value):
-        self.chem.site_area = value
     
     @property
     def mass(self):
@@ -38,3 +30,8 @@ class IdealDoseModel:
     @p.setter
     def p(self, value):
         self._p = value
+
+    def run(self, time):
+        raise NotImplementedError("Models require a run method")
+    
+    

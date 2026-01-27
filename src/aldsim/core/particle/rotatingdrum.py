@@ -2,8 +2,11 @@
 
 import numpy as np
 from aldsim.solvers import ode_solver, boundedNewton_solver
+from aldsim.constants import kb
 
-class RotatingDrum:
+from properunits import Pressure, Temperature, Area
+
+class WellMixedParticleND:
     """Model for batch particle coating under a well mixed reactor approximation.
 
     Implementation of a non-dimensional model for particle coating
@@ -31,9 +34,9 @@ class RotatingDrum:
 
     Examples
     --------
-    Create a RotatingDrum model with a Damkohler number of 2.0:
+    Create a WellMixedParticleND model with a Damkohler number of 2.0:
 
-    >>> model = RotatingDrum(Da=2.0)
+    >>> model = WellMixedParticleND(Da=2.0)
     >>> coverage = model.calc_coverage(t=1.0)
     >>> print(f"Coverage: {coverage:.3f}")
     Coverage: 0.757
@@ -80,7 +83,7 @@ class RotatingDrum:
         --------
         Calculate coverage at unit dose time:
 
-        >>> model = RotatingDrum(Da=2.0)
+        >>> model = WellMixedParticleND(Da=2.0)
         >>> coverage = model.calc_coverage(t=1.0)
         >>> print(f"Coverage: {coverage:.3f}")
         Coverage: 0.757
@@ -150,7 +153,7 @@ class RotatingDrum:
         --------
         Run a basic simulation with default parameters:
 
-        >>> model = RotatingDrum(Da=2.0)
+        >>> model = WellMixedParticleND(Da=2.0)
         >>> t, coverage, precursor = model.run()
         >>> print(f"Final coverage: {coverage[-1]:.3f}")
         Final coverage: 0.993
@@ -206,7 +209,7 @@ class RotatingDrum:
         --------
         Generate a saturation curve with default parameters:
 
-        >>> model = RotatingDrum(Da=2.0)
+        >>> model = WellMixedParticleND(Da=2.0)
         >>> t, coverage = model.saturation_curve()
         >>> print(f"Coverage at t=1: {coverage[100]:.3f}")  # dt=0.01, index ≈100
         Coverage at t=1: 0.757
@@ -245,6 +248,26 @@ class RotatingDrum:
         return tau, 1/(1+Da*(1-theta))
 
 
+def calc_parameters(chem, p, p0, T, S, flow_sccm):
+    """Calculate the nondimensional parameters Da and t0 for a rotating drum model
+    
+    Da is the damkohler number, t0 is the normalized saturation time
+
+    """
+    if isinstance(p, Pressure):
+        p = p.x
+    if isinstance(p0, Pressure):
+        p0 = p0.x
+    if isinstance(p0, Temperature):
+        T = T.x
+    if isinstance(S, Area):
+        S = S.x
+    flow_si = (1e-6*flow_sccm/60)*1e5/p0*(T/300)
+    da = 0.25*S/flow_si*chem.sticking_prob*chem.vth
+    t0 = kb*T*S/(flow_sccm*chem.site_area*p)
+    return da, t0
+
+
 def calc_coverage(Da, tau):
 
     f = lambda t: t - np.log(1-t)/Da - tau
@@ -263,6 +286,3 @@ def saturation_curve_double(Da1, Da2, f1, f2, theta_max=0.99999):
     return tau, f1*theta1+f2*theta2
 
 
-def saturation_curve(Da, tmax=5, dt= 0.01):
-    m = RotatingDrum(Da)
-    return m.saturation_curve(tmax, dt)

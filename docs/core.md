@@ -6,17 +6,17 @@ aldsim implements a number of core models for atomic layer deposition.
 
 aldsim implements four particle coating models for atomic layer deposition (ALD) processes, each representing different reactor configurations and transport regimes:
 
-**FluidizedBed**
+**FluidizedBedND**
 : Batch fluidized bed reactor model combining well-mixed particle approximation with plug flow precursor transport. Suitable for modeling particle coating in fluidized bed reactors where particles are well mixed but precursor flow exhibits plug flow behavior.
 
-**RotatingDrum**
+**WellMixedParticleND**
 : Batch particle coating model under well-stirred reactor approximation for both particles and precursor transport. Appropriate for rotating drum reactors and other systems where complete mixing of both phases occurs.
 
 **SpatialPlugFlow**
 : Continuous particle coating model with stratified particle mixing and plug flow precursor transport. Both particles and precursor move in the same direction, making this suitable for spatial ALD systems with co-current flow.
 
 **SpatialWellMixed**
-: Continuous particle coating model with stratified particle mixing and well-stirred precursor transport. This model inherits from RotatingDrum and is formally equivalent to batch coating when residence time replaces dose time.
+: Continuous particle coating model with stratified particle mixing and well-stirred precursor transport. This model inherits from WellMixedParticleND and is formally equivalent to batch coating when residence time replaces dose time.
 
 All models assume first-order irreversible Langmuir kinetics with reaction rates characterized by a Damkohler number (Da). Each class provides methods to calculate surface coverage, generate saturation curves, and run full simulations over normalized time or residence time.
 
@@ -34,10 +34,10 @@ compute saturation curve for a given value of the Damkohler number:
 
 ```python
 import matplotlib.pyplot as plt
-from aldsim.core.particle import FluidizedBed
+from aldsim.core.particle import FluidizedBedND
 
-# Create a FluidizedBed instance with Damkohler number = 1
-fb = FluidizedBed(Da=1.0)
+# Create a FluidizedBedND instance with Damkohler number = 1
+fb = FluidizedBedND(Da=1.0)
 
 # Calculate the saturation curve
 t, coverage = fb.saturation_curve(tmax=5, dt=0.01)

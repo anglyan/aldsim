@@ -1,27 +1,27 @@
-from aldsim.core.particle import FluidizedBed, RotatingDrum, SpatialPlugFlow, SpatialWellMixed
+from aldsim.core.particle import FluidizedBedND, WellMixedParticleND, SpatialPlugFlow, SpatialWellMixed
 
-class TestFluidizedBed:
+class TestFluidizedBedND:
 
     def test_saturationcurve(self):
-        pfm = FluidizedBed(10)
+        pfm = FluidizedBedND(10)
         x, y = pfm.saturation_curve()
         assert x.shape == y.shape
 
     def test_run(self):
-        pfm = FluidizedBed(10)
+        pfm = FluidizedBedND(10)
         x,y,z = pfm.run()
         assert x.shape == y.shape
 
 
-class TestRotatingDrum:
+class TestWellMixedParticleND:
 
     def test_saturationcurve(self):
-        wsm = RotatingDrum(10)
+        wsm = WellMixedParticleND(10)
         x, y = wsm.saturation_curve()
         assert x.shape == y.shape
 
     def test_run(self):
-        pfm = RotatingDrum(10)
+        pfm = WellMixedParticleND(10)
         x,y,z = pfm.run()
         assert x.shape == y.shape
 

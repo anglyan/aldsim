@@ -1,16 +1,16 @@
-"""Example using FluidizedBed class from core.particle module
+"""Example using FluidizedBedND class from core.particle module
 
 This example demonstrates how to:
-1. Create a FluidizedBed instance with a Damkohler number of 1
+1. Create a FluidizedBedND instance with a Damkohler number of 1
 2. Calculate the saturation curve
 3. Plot the saturation curve using matplotlib
 """
 
 import matplotlib.pyplot as plt
-from aldsim.core.particle import FluidizedBed
+from aldsim.core.particle import FluidizedBedND
 
-# Create a FluidizedBed instance with Damkohler number = 1
-fb = FluidizedBed(Da=1.0)
+# Create a FluidizedBedND instance with Damkohler number = 1
+fb = FluidizedBedND(Da=1.0)
 
 # Calculate the saturation curve
 t, coverage = fb.saturation_curve(tmax=5, dt=0.01)

@@ -1,4 +1,4 @@
-from aldsim.chem import Precursor, SurfaceKinetics, ALDsoft, ALDideal, ALDchem
+from aldsim.chem import Precursor, SurfaceKinetics, ALDsoft, ALDideal
 import pytest
 
 

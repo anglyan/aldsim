@@ -1,11 +1,11 @@
 #Copyright © 2024, UChicago Argonne, LLC
 
 from .chem import ALDideal
-from .models.dose import ZeroD, WellStirred, ParticlePlugFlow
+from .models import ZeroD, RotatingDrum, ParticlePlugFlow
 
 _ideal_models = {
     'zeroD' : ZeroD,
-    'wellstirred' : WellStirred,
+    'rotatingdrum' : RotatingDrum,
     'fluidizedbed' : ParticlePlugFlow
 }
 

@@ -1,2 +1,2 @@
-from .chem import ALDchem, ALDideal, Precursor
+from .chem import ALDchem, Precursor
 from .aldmodel import aldmodel

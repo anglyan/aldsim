@@ -1,8 +1,8 @@
 #Copyright © 2024, UChicago Argonne, LLC
 
-from .rotatingdrum import RotatingDrum
+from .rotatingdrum import WellMixedParticleND
 
-class SpatialWellMixed(RotatingDrum):
+class SpatialWellMixed(WellMixedParticleND):
     """Model for continuous particle coating under well stirred approximations.
 
     Implementation of a non-dimensional model for particle coating
@@ -21,10 +21,10 @@ class SpatialWellMixed(RotatingDrum):
     time of particles in the reactor.
 
     This model is formally equivalent to a batch particle coating under
-    the well stirred approximation (RotatingDrum) in which the normalized
+    the well stirred approximation (WellMixedParticleND) in which the normalized
     residence time is replaced by the normalized dose time. The mathematical
     formulation is identical, allowing SpatialWellMixed to inherit all
-    methods from RotatingDrum.
+    methods from WellMixedParticleND.
 
     Parameters
     ----------
@@ -57,7 +57,7 @@ class SpatialWellMixed(RotatingDrum):
 
     See Also
     --------
-    RotatingDrum : Batch reactor model with identical mathematical formulation
+    WellMixedParticleND : Batch reactor model with identical mathematical formulation
     SpatialPlugFlow : Continuous model with plug flow precursor transport
 
     """

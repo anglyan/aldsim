@@ -5,18 +5,18 @@ API
 Particle Models
 ===============
 
-FluidizedBed
-------------
+FluidizedBedND
+--------------
 
-.. autoclass:: aldsim.core.particle.fluidizedbed.FluidizedBed
+.. autoclass:: aldsim.core.particle.fluidizedbed.FluidizedBedND
     :members:
     :undoc-members:
     :show-inheritance:
 
-RotatingDrum
-------------
+WellMixedParticleND
+--------------
 
-.. autoclass:: aldsim.core.particle.rotatingdrum.RotatingDrum
+.. autoclass:: aldsim.core.particle.rotatingdrum.WellMixedParticleND
     :members:
     :undoc-members:
     :show-inheritance:
