@@ -22,7 +22,9 @@ release = '0.0.2'
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.viewcode',
-              'myst_parser']
+              'myst_nb']
+
+nb_execution_mode = "off"
 
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 toc_object_entries = False
