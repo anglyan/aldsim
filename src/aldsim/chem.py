@@ -1,4 +1,4 @@
-#Copyright © 2024-2025, UChicago Argonne, LLC
+#Copyright © 2024-2026, UChicago Argonne, LLC
 
 """
 Classes for modeling self-limited surface processes.
@@ -7,6 +7,7 @@ This module implements the core chemistry models for atomic layer deposition (AL
 and other self-limited surface reactions. The primary classes are:
 
 - **Precursor**: Defines precursor molecules with properties like mass and thermal velocity
+- **ALDchem**: Defines an ideal first-order Langmuir kinetics with optional second pathway and surface recombination
 - **ALDideal**: Ideal first-order Langmuir kinetics with single sticking probability
 - **ALDsoft**: Dual-pathway Langmuir kinetics for modeling soft saturation behavior
 
@@ -575,13 +576,11 @@ class ALDsoft(SurfaceKinetics):
         return x, y
 
 
-
 class ALDchem(SurfaceKinetics):
     """
-    Dual-pathway Langmuir kinetics with coverage-dependent recombination.
+    Self-limited irreversible first order Langmuir kinetics with optional second pathway and coverage-dependent recombination.
 
-    This class combines the dual-pathway sticking model from ALDsoft with the
-    recombination kinetics from ALDideal. It models surfaces with one or two types
+    This class models surfaces with one or two types
     of reactive sites (each with different sticking probabilities) while also
     accounting for recombination reactions on reacted sites.
 
@@ -596,7 +595,7 @@ class ALDchem(SurfaceKinetics):
     prec : Precursor
         The precursor molecule for this half-reaction.
     nsites : float
-        Number of reactive sites per unit surface area (sites/m²).
+        Number of reactive sites per unit surface area (sites/m2).
     p_stick1 : float
         Sticking probability for pathway 1 sites (0 ≤ p_stick1 ≤ 1).
     p_stick2 : float, optional
