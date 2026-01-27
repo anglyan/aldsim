@@ -1,4 +1,4 @@
-#Copyright © 2024, UChicago Argonne, LLC
+#Copyright © 2024-Present, UChicago Argonne, LLC
 
 """Batch particle coating ALD models"""
 

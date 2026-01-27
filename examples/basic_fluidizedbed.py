@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 from aldsim import Precursor, ALDideal, aldmodel
 
 import matplotlib.pyplot as pt

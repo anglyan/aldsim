@@ -1,4 +1,4 @@
-#Copyright © 2024-2026, UChicago Argonne, LLC
+#Copyright © 2024-Present, UChicago Argonne, LLC
 
 """
 Classes for modeling self-limited surface processes.

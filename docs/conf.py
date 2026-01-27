@@ -12,7 +12,7 @@ import os
 sys.path.insert(0, os.path.abspath('../src'))  # Source code dir relative to this file
 
 project = 'aldsim'
-copyright = '2024, UChicago LLC'
+copyright = '2024-Present, UChicago LLC'
 author = 'Angel Yanguas-Gil'
 release = '0.0.2'
 

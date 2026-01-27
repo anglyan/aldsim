@@ -1,3 +1,4 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
 
 class DoseModel:
 

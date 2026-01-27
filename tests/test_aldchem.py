@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 from aldsim.chem import Precursor, SurfaceKinetics, ALDsoft, ALDideal, ALDchem
 import pytest
 

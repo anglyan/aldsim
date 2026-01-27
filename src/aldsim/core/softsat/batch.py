@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 import numpy as np
 from scipy.integrate import solve_ivp
 

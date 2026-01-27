@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 from aldsim.core.diffusion import transport_circular, solve, solve_until
 import numpy as np
 import pytest

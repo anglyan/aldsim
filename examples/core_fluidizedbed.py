@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 """Example using FluidizedBedND class from core.particle module
 
 This example demonstrates how to:

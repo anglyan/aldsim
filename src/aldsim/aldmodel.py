@@ -1,4 +1,4 @@
-#Copyright © 2024, UChicago Argonne, LLC
+#Copyright © 2024-Present, UChicago Argonne, LLC
 
 from .chem import ALDideal
 from .models import ZeroD, RotatingDrum, ParticlePlugFlow

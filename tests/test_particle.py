@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 from aldsim.core.particle import FluidizedBedND, WellMixedParticleND, SpatialPlugFlow, SpatialWellMixed
 
 class TestFluidizedBedND:

@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 import pytest
 from aldsim.models.batch import RotatingDrum
 from aldsim.chem import Precursor, ALDchem

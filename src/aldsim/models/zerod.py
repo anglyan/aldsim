@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 from ..constants import kb
 from .base import DoseModel
 

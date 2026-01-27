@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 from aldsim import Precursor, aldmodel
 from aldsim.chem import ALDideal
 from aldsim.models import ZeroD

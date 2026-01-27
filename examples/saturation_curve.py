@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 from aldsim.chem import Precursor, ALDideal
 import matplotlib.pyplot as pt
 

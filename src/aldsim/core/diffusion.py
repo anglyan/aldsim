@@ -1,4 +1,4 @@
-#Copyright © 2025, UChicago Argonne, LLC
+#Copyright © 2025-Present, UChicago Argonne, LLC
 
 import numpy as np
 from scipy.linalg import solve_banded

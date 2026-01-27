@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 from aldsim.core.diffusion import solve_until
 import matplotlib.pyplot as pt
 import numpy as np

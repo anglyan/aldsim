@@ -1,4 +1,4 @@
-#Copyright © 2024-2025, UChicago Argonne, LLC
+#Copyright © 2024-Present, UChicago Argonne, LLC
 
 import math as m
 

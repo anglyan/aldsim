@@ -1,3 +1,5 @@
+#Copyright © 2024-Present, UChicago Argonne, LLC
+
 from aldsim.core.ideal.particle.batch import PlugFlowMixed
 
 model = PlugFlowMixed(1)
