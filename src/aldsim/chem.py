@@ -14,7 +14,7 @@ These classes provide the foundation for simulating coverage-dependent surface k
 saturation curves, and characteristic timescales of self-limited processes.
 """
 
-from .aldutils import calc_vth
+from .utils import calc_vth
 from .constants import kb, Rgas, Nav
 
 import numpy as np
@@ -574,6 +574,291 @@ class ALDsoft(SurfaceKinetics):
         y = (self.f1*(1-np.exp(-x/t1)) + self.f2*(1-np.exp(-x/t2)))/(self.f1+self.f2)
         return x, y
 
+
+
+class ALDchem(SurfaceKinetics):
+    """
+    Dual-pathway Langmuir kinetics with coverage-dependent recombination.
+
+    This class combines the dual-pathway sticking model from ALDsoft with the
+    recombination kinetics from ALDideal. It models surfaces with one or two types
+    of reactive sites (each with different sticking probabilities) while also
+    accounting for recombination reactions on reacted sites.
+
+    The model assumes:
+    - One or two independent populations of reactive sites
+    - First-order Langmuir adsorption kinetics for each pathway
+    - Coverage-dependent recombination with the same probability for both pathways
+    - Self-limiting surface reactions
+
+    Parameters
+    ----------
+    prec : Precursor
+        The precursor molecule for this half-reaction.
+    nsites : float
+        Number of reactive sites per unit surface area (sites/m²).
+    p_stick1 : float
+        Sticking probability for pathway 1 sites (0 ≤ p_stick1 ≤ 1).
+    p_stick2 : float, optional
+        Sticking probability for pathway 2 sites (0 ≤ p_stick2 ≤ 1, default: 0).
+        If 0, only a single pathway is used.
+    f1 : float, optional
+        Fraction of the surface covered by pathway 1 reactive sites.
+        Defaults to 1 if single pathway, or (1 - f2) if f2 is provided.
+    f2 : float, optional
+        Fraction of the surface covered by pathway 2 reactive sites (default: 0).
+    p_rec0 : float, optional
+        Recombination probability on bare sites (default: 0).
+    p_rec1 : float, optional
+        Recombination probability on fully reacted sites (default: 0).
+        This same probability applies to both pathways.
+    dm : float, optional
+        Mass gain during the cycle (default: 1).
+
+    Attributes
+    ----------
+    name : str
+        Identifier for this kinetics model type ('aldchem')
+    p_stick1 : float
+        Sticking probability for pathway 1 sites
+    p_stick2 : float
+        Sticking probability for pathway 2 sites
+    f1 : float
+        Fraction of pathway 1 sites
+    f2 : float
+        Fraction of pathway 2 sites
+    p_rec0 : float
+        Recombination probability on bare sites
+    p_rec1 : float
+        Recombination probability on reacted sites (same for both pathways)
+    dm : float
+        Mass gain
+    npaths : int
+        Number of active pathways (1 or 2)
+    single_path : bool
+        True if only one pathway is active
+    """
+
+    name = 'aldchem'
+
+    def __init__(self, prec, nsites, p_stick1, p_stick2=0, f1=None, f2=0,
+                 p_rec0=0, p_rec1=0, dm=1):
+        self.p_stick1 = p_stick1
+        self.p_stick2 = p_stick2
+        self.f2 = f2
+        if f1 is None:
+            self.f1 = 1 - self.f2
+        else:
+            self.f1 = f1
+        self.p_rec0 = p_rec0
+        self.p_rec1 = p_rec1
+        self.dm = dm
+        super().__init__(prec, nsites, self.f1 + self.f2)
+
+    @property
+    def npaths(self):
+        """Number of active pathways (1 or 2)"""
+        return 1 if self.p_stick2 == 0 and self.f2 == 0 else 2
+
+    @property
+    def single_path(self):
+        """True if only one pathway is active"""
+        return self.npaths == 1
+
+    @property
+    def has_rec(self):
+        """True if recombination is active (p_rec0 or p_rec1 is non-zero)"""
+        return self.p_rec0 != 0 or self.p_rec1 != 0
+
+    def sticking_prob(self, cov1=0, cov2=None):
+        """
+        Calculate the total coverage-dependent sticking probability from both pathways.
+
+        Parameters
+        ----------
+        cov1 : float, optional
+            Surface coverage on pathway 1 sites (0 ≤ cov1 ≤ 1, default: 0).
+        cov2 : float, optional
+            Surface coverage on pathway 2 sites (0 ≤ cov2 ≤ 1, default: 0).
+            Required if two pathways are active.
+
+        Returns
+        -------
+        float
+            Total sticking probability at the given coverages
+
+        Raises
+        ------
+        ValueError
+            If single pathway mode and cov2 is provided, or if dual pathway
+            mode and cov2 is not provided.
+        """
+        if self.single_path:
+            if cov2 is not None:
+                raise ValueError("cov2 should not be provided for single pathway mode")
+            cov2 = 0
+        else:
+            if cov2 is None:
+                raise ValueError("cov2 must be provided for dual pathway mode")
+        return self.f1 * self.p_stick1 * (1 - cov1) + self.f2 * self.p_stick2 * (1 - cov2)
+
+    def recomb_prob(self, cov1=0, cov2=None):
+        """
+        Calculate the coverage-dependent recombination probability.
+
+        The recombination probability varies linearly with the total weighted coverage:
+        R(θ1, θ2) = p_rec0 + (f1*θ1 + f2*θ2) * (p_rec1 - p_rec0)
+
+        Both pathways contribute to recombination with the same p_rec1 value.
+
+        Parameters
+        ----------
+        cov1 : float, optional
+            Surface coverage on pathway 1 sites (0 ≤ cov1 ≤ 1, default: 0).
+        cov2 : float, optional
+            Surface coverage on pathway 2 sites (0 ≤ cov2 ≤ 1, default: 0).
+            Required if two pathways are active.
+
+        Returns
+        -------
+        float
+            Recombination probability at the given coverages
+
+        Raises
+        ------
+        ValueError
+            If single pathway mode and cov2 is provided, or if dual pathway
+            mode and cov2 is not provided.
+        """
+        if self.single_path:
+            if cov2 is not None:
+                raise ValueError("cov2 should not be provided for single pathway mode")
+            cov2 = 0
+        else:
+            if cov2 is None:
+                raise ValueError("cov2 must be provided for dual pathway mode")
+        weighted_cov = self.f1 * cov1 + self.f2 * cov2
+        return self.p_rec0 + weighted_cov * (self.p_rec1 - self.p_rec0)
+
+    def react_prob(self, cov1=0, cov2=None):
+        """
+        Calculate the total reaction probability.
+
+        The total reaction probability is the sum of sticking and recombination
+        probabilities: P_react(θ1, θ2) = S(θ1, θ2) + R(θ1, θ2)
+
+        Parameters
+        ----------
+        cov1 : float, optional
+            Surface coverage on pathway 1 sites (0 ≤ cov1 ≤ 1, default: 0).
+        cov2 : float, optional
+            Surface coverage on pathway 2 sites (0 ≤ cov2 ≤ 1, default: 0).
+            Required if two pathways are active.
+
+        Returns
+        -------
+        float
+            Total reaction probability at the given coverages
+
+        Raises
+        ------
+        ValueError
+            If single pathway mode and cov2 is provided, or if dual pathway
+            mode and cov2 is not provided.
+        """
+        if self.single_path:
+            if cov2 is not None:
+                raise ValueError("cov2 should not be provided for single pathway mode")
+        else:
+            if cov2 is None:
+                raise ValueError("cov2 must be provided for dual pathway mode")
+        return self.sticking_prob(cov1, cov2) + self.recomb_prob(cov1, cov2)
+
+    def sticking_prob_av(self, av1, av2=None):
+        """
+        Calculate the average sticking probability based on site availability.
+
+        Parameters
+        ----------
+        av1 : float
+            Fraction of available sites on pathway 1 (0 ≤ av1 ≤ 1).
+        av2 : float, optional
+            Fraction of available sites on pathway 2 (0 ≤ av2 ≤ 1).
+            Required if two pathways are active.
+
+        Returns
+        -------
+        float
+            Total average sticking probability from both pathways
+
+        Raises
+        ------
+        ValueError
+            If single pathway mode and av2 is provided, or if dual pathway
+            mode and av2 is not provided.
+        """
+        if self.single_path:
+            if av2 is not None:
+                raise ValueError("av2 should not be provided for single pathway mode")
+            av2 = 0
+        else:
+            if av2 is None:
+                raise ValueError("av2 must be provided for dual pathway mode")
+        return self.f1 * self.p_stick1 * av1 + self.f2 * self.p_stick2 * av2
+
+    def t0(self, T, p):
+        """
+        Calculate the characteristic saturation time(s).
+
+        Parameters
+        ----------
+        T : float
+            Temperature in Kelvin
+        p : float
+            Precursor partial pressure in Pascals
+
+        Returns
+        -------
+        float or tuple of float
+            For single pathway mode, returns t1 as a float.
+            For dual pathway mode, returns (t1, t2) characteristic saturation
+            times for each pathway in seconds.
+        """
+        t1 = 1.0 / (self.site_area * self.Jwall(T, p) * self.p_stick1)
+        if self.single_path:
+            return t1
+        t2 = 1.0 / (self.site_area * self.Jwall(T, p) * self.p_stick2)
+        return t1, t2
+
+    def saturation_curve(self, T, p):
+        """
+        Generate the time-dependent saturation curve combining both pathways.
+
+        Parameters
+        ----------
+        T : float
+            Temperature in Kelvin
+        p : float
+            Precursor partial pressure in Pascals
+
+        Returns
+        -------
+        tuple of ndarray
+            (time, coverage) arrays
+        """
+        t1, t2 = self.t0(T, p)
+        t0 = max(t1, t2)
+        tscale = 5 * t0
+        logtscale = np.log10(tscale)
+        scale = int(logtscale)
+        if logtscale < 0:
+            scale -= 1
+        factor = int(10 ** (logtscale - scale)) + 1
+        tmax = factor * 10 ** scale
+        dt = tmax / 100
+        x = np.arange(0, tmax, dt)
+        y = (self.f1 * (1 - np.exp(-x / t1)) + self.f2 * (1 - np.exp(-x / t2))) / (self.f1 + self.f2)
+        return x, y
 
 
 class ALDProcess:
