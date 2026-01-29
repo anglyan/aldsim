@@ -2,9 +2,6 @@
 
 """Batch particle coating ALD models"""
 
-import numpy as np
-from scipy.integrate import solve_ivp
-
 from .base import DoseModel
 from aldsim.constants import kb
 from aldsim.core.particle import WellMixedParticleND
@@ -197,29 +194,4 @@ class FluidizedBed(DoseModel):
             t, cov, x = self.base_model.run(trun, dtrun)
 
         return t*self.t0(), cov, x
-
-
-class PlugFlowMixedND:
-
-    def __init__(self, Da):
-        self.Da = Da
-
-    def calc_coverage(self, t):
-        Da = self.Da
-        return 1 - 1/Da*np.log(1+(np.exp(Da)-1)*np.exp(-Da*t))
-    
-    def saturation_curve(self, tmax=5, dt= 0.01):
-        t = np.arange(0, tmax, dt)
-        Da = self.Da
-        c = 1 - 1/Da*np.log(1+(np.exp(Da)-1)*np.exp(-Da*t))
-        return t, c
-    
-    def run(self, tmax=5, dt=0.01):
-        t = np.arange(0, tmax, dt)
-        Da = self.Da
-        y = 1/Da*np.log(1+(np.exp(Da)-1)*np.exp(-Da*t))
-        c = 1-y
-        x = np.exp(-Da*y)
-        return t, c, x
-
 

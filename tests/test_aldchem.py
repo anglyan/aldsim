@@ -178,3 +178,8 @@ class TestALDchem:
 
         assert isinstance(ald.t0(200, 1e2), tuple)
 
+    def test_saturation(self):
+        p = Precursor(mass=100)
+        ald = ALDchem(p, nsites=1e19, p_stick1=0.001, f1=0.3)
+        assert isinstance(ald.saturation_curve(400, 0.1), tuple)
+

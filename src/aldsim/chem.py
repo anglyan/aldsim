@@ -845,8 +845,12 @@ class ALDchem(SurfaceKinetics):
         tuple of ndarray
             (time, coverage) arrays
         """
-        t1, t2 = self.t0(T, p)
-        t0 = max(t1, t2)
+        if self.single_path:
+            t1 = self.t0(T, p)
+            t0 = t1
+        else:
+            t1, t2 = self.t0(T, p)
+            t0 = max(t1, t2)
         tscale = 5 * t0
         logtscale = np.log10(tscale)
         scale = int(logtscale)
@@ -856,7 +860,10 @@ class ALDchem(SurfaceKinetics):
         tmax = factor * 10 ** scale
         dt = tmax / 100
         x = np.arange(0, tmax, dt)
-        y = (self.f1 * (1 - np.exp(-x / t1)) + self.f2 * (1 - np.exp(-x / t2))) / (self.f1 + self.f2)
+        if self.single_path:
+            y = 1 - np.exp(-x / t1)
+        else:
+            y = (self.f1 * (1 - np.exp(-x / t1)) + self.f2 * (1 - np.exp(-x / t2))) / (self.f1 + self.f2)
         return x, y
 
 
