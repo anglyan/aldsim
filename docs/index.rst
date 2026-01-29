@@ -29,6 +29,8 @@ Contents
 
    intro.md
    ald.md
+   tutorial.md
+   example.ipynb
    core.md
    api
 
