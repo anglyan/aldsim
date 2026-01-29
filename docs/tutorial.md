@@ -14,7 +14,7 @@ The basic workflow in aldsim involves:
 
 1. Defining the surface chemistry and kinetic parameters
 2. Selecting an appropriate reactor or transport model
-3. Running simulations to predict coverage evolution and dose requirements
+3. Running simulations to model the evolution of surface coverage with time
 
 ## ALD Surface kinetics
 
@@ -61,32 +61,25 @@ Note that in order to extract the SI units, we need to use `pressure.x` and `tem
 ### Relating the density of surface sites to experimental observables
 
 aldsim defines a set of utility functions that help calculate the density of surface sites from observables. 
+The first function is `sitedensity_fromqcm`, which calculates the density of surface sites from the mass (in ng/cm2)
+obtained by quartz crystal microbalance. It requires two additional variables: the molar mass of the solid (in g)
+and the number of precursor molecules required to complete the molecular formula. The idea here is that,
+given a mass per surface area and  the mass per moles, you can get the moles per surface area and therefore
+the number of sites per surface area. For instance, for TMA and alumina:
 
-### Surface Coverage
+```py
+from aldsim.utils import sitedensity_fromqcm
 
-Surface coverage, typically denoted as θ, represents the fraction of available surface sites that have reacted with the precursor. In an ideal self-limiting process:
+mm_Al2O3 = 102
+s1 = sitedensity_fromqcm(35, 102, N=2)
+```
 
-- θ = 0 corresponds to a completely unreacted surface
-- θ = 1 corresponds to saturation, where all available sites have reacted
+The value of `s1` is approximately `4e18` sites/m2.
 
-### Dose and Exposure
+## A simple reactor model
 
-The precursor dose is characterized by the exposure, defined as the product of precursor partial pressure and time:
+Once we have defined a surface kinetics we can load an ALD model to compute the evolution of surface coverage as a function
+of time. Here is an example for the case of a 0D model that models the evolution of surface coverage as a function of time
+for a constant precursor partial pressure:
 
-$$E = P \cdot t$$
 
-The relationship between exposure and surface coverage depends on the reaction mechanism and transport conditions. For a simple first-order Langmuir adsorption model:
-
-$$\frac{d\theta}{dt} = k \cdot P \cdot (1 - \theta)$$
-
-where k is the rate constant for surface reaction.
-
-### Saturation Behavior
-
-A key characteristic of ALD is the saturation curve, which shows how coverage approaches unity with increasing exposure. The shape of this curve depends on:
-
-- **Reaction kinetics**: The intrinsic rate of surface reactions
-- **Precursor transport**: How efficiently precursors reach the surface
-- **Steric effects**: Site blocking by adsorbed species or ligands
-
-Understanding these factors is essential for optimizing dose times and achieving uniform coatings in practical ALD applications.

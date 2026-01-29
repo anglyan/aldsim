@@ -78,6 +78,32 @@ def sitearea_fromqcm(mpc, M, nmol=1):
 
     return M/(mpc*1e-5*6.022e23*nmol)
 
+
+def sitedensity_fromqcm(mpc, M, nmol=1):
+    """Surface site density from QCM mass
+
+    Calculate the surface site density from qcm data
+
+    Parameters
+    ----------
+
+    mpc : float
+        Mass per cycle in  ng/cm2
+    M : float
+        Molar mass in g/mol
+    nmol : int, optional (default 1)
+        Number of precursor molecules per unit formula of the solid
+
+    Returns
+    -------
+    float
+        Surface site density in #sites / sq. meters
+
+    """
+
+    return 1/sitearea_fromqcm(mpc, M, nmol)
+
+
 def sitearea_fromrbs(atoms_area, atoms_permol=1.0):
     """Average area of a surface site from RBS data
 
