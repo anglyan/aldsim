@@ -51,9 +51,9 @@ in custom units and transform them into SI units. For instance:
 from properunits import Pressure, Temperature
 
 pressure = Pressure(0.1, 'Torr')
-temperature = Temperature(200, 'K')
+temperature_K = Temperature(200, 'C')
 
-ald = ALDChem(pressure.x, 1e19, temperature.x)
+ald = ALDChem(pressure.x, 1e19, 0.001)
 ```
 
 Note that in order to extract the SI units, we need to use `pressure.x` and `temperature.x`.
