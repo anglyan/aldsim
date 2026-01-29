@@ -109,7 +109,11 @@ class FluidizedBedND:
             self.Da = Da
         else:
             Da = self.Da
-        cov = 1 - 1/Da*np.log(1+(np.exp(Da)-1)*np.exp(-Da*t))
+        
+        b = Da*(1-t)
+        b_safe = np.minimum(b, 50)
+        av = np.where(b>50, 1-t, 1/Da*np.log(1+np.exp(b_safe)-np.exp(-Da*t)))
+        cov = 1 - av
         return cov
     
     def saturation_curve(self, tmax=5, dt= 0.01):
@@ -232,7 +236,9 @@ class FluidizedBedND:
         """
         t = np.arange(0, tmax, dt)
         Da = self.Da
-        y = 1/Da*np.log(1+(np.exp(Da)-1)*np.exp(-Da*t))
+        b = Da*(1-t)
+        b_safe = np.minimum(b, 50)
+        y = np.where(b>50, 1-t, 1/Da*np.log(1+np.exp(b_safe)-np.exp(-Da*t)))
         c = 1-y
         x = np.exp(-Da*y)
         return t, c, x
