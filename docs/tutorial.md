@@ -35,28 +35,10 @@ mass units.
 We can now define a self-limited process through the class `ALDchem`:
 
 ```py
-ald = ALDchem(1e2, 1e19, 0.001)
+ald = ALDchem(prec, 1e19, 0.001)
 ```
 
-The first parameter represents the precursor pressure (in Pa), the second is the number of surface sites per surface area (in square meters), and the third parameter is the sticking probability of the self-limiting process.
-
-This shows a key aspect of aldsim: it works in SI units.
-
-### Using custom units
-
-aldsim lists properunits as a dependency. properunits is a python module that provides a simple way of defining variables
-in custom units and transform them into SI units. For instance:
-
-```py
-from properunits import Pressure, Temperature
-
-pressure = Pressure(0.1, 'Torr')
-temperature_K = Temperature(200, 'C')
-
-ald = ALDChem(pressure.x, 1e19, 0.001)
-```
-
-Note that in order to extract the SI units, we need to use `pressure.x` and `temperature.x`.
+The first parameter represents the precursor, the second is the number of surface sites per surface area (in square meters), and the third parameter is the sticking probability of the self-limiting process.
 
 ### Relating the density of surface sites to experimental observables
 
@@ -82,4 +64,27 @@ Once we have defined a surface kinetics we can load an ALD model to compute the 
 of time. Here is an example for the case of a 0D model that models the evolution of surface coverage as a function of time
 for a constant precursor partial pressure:
 
+```py
+from aldsim.models import ZeroD
+model = ZeroD(ald, T=500, p=1e2)
+t, cov = model.saturation_curve()
+```
+Note that temperature and pressure both use SI units, so the temperature is in K and the pressure is in Pa.
+The method `saturation_curve` returns the saturation curve for the self-limited process for these two conditions as
+a tuple of two `numpy.array` objects.
 
+### Using custom units
+
+aldsim lists properunits as a dependency. properunits is a python module that provides a simple way of defining variables
+in custom units and transform them into SI units. For instance:
+
+```py
+from properunits import Pressure, Temperature
+
+pressure = Pressure(0.1, 'Torr')
+temperature = Temperature(200, 'C')
+model = ZeroD(ald, T=temperature.x, p=pressure.x)
+```
+
+In order to extract the SI units, we need to use `pressure.x` and `temperature.x`. This provides a simple way of
+defining these variables in other unitt, such as degree celsius or Torr.
