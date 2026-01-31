@@ -1,6 +1,6 @@
 #Copyright © 2024-Present, UChicago Argonne, LLC
 
-from aldsim.core.particle import FluidizedBedND, WellMixedParticleND, SpatialPlugFlow, SpatialWellMixed
+from aldsim.core.particle import FluidizedBedND, WellMixedParticleND, SpatialPlugFlow, SpatialWellMixedND
 
 class TestFluidizedBedND:
 
@@ -44,12 +44,12 @@ class TestSpatialPlugFlow:
 class TestSpatialWellMixed:
 
     def test_saturationcurve(self):
-        wsm = SpatialWellMixed(10)
+        wsm = SpatialWellMixedND(10)
         x, y = wsm.saturation_curve()
         assert x.shape == y.shape
 
     def test_run(self):
-        pfm = SpatialWellMixed(10)
+        pfm = SpatialWellMixedND(10)
         x,y,z = pfm.run()
         assert x.shape == y.shape
 

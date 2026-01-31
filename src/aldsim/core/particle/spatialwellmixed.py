@@ -2,7 +2,7 @@
 
 from .rotatingdrum import WellMixedParticleND
 
-class SpatialWellMixed(WellMixedParticleND):
+class SpatialWellMixedND(WellMixedParticleND):
     """Model for continuous particle coating under well stirred approximations.
 
     Implementation of a non-dimensional model for particle coating
@@ -43,7 +43,7 @@ class SpatialWellMixed(WellMixedParticleND):
     --------
     Create a SpatialWellMixed model with a Damkohler number of 2.0:
 
-    >>> model = SpatialWellMixed(Da=2.0)
+    >>> model = SpatialWellMixedND(Da=2.0)
     >>> coverage = model.calc_coverage(t=1.0)
     >>> print(f"Coverage: {coverage:.3f}")
     Coverage: 0.757
