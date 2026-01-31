@@ -3,14 +3,20 @@ from aldsim.constants import kb
 from aldsim.core.particle import SpatialWellMixedND
 
 
-class SpatialParticleWellMixed(DoseModel):
+class SpatialWellMixed(DoseModel):
     """
-    Model of ALD particle coating of a particle bed on a spatial ALD reactor using a well-stirred precursor approximation.
+    Model of ALD coating in a spatial ALD reactor using a well-stirred precursor approximation.
 
-    This model simulates the coating of particles in a spatial ALD reactor where
-    particles are well-mixed. It assumes
-    uniform precursor concentration throughout the reactor volume and
-    first-order Langmuir kinetics for the surface reactions.
+    This model simulates ALD coating in a spatial reactor where the precursor
+    is well-mixed in the direction perpendicular to the substrate movement.
+    It assumes uniform precursor concentration throughout the reactor volume
+    and first-order Langmuir kinetics for the surface reactions.
+
+    The model supports two configurations:
+    - Flat surface coating: When S is None, the model treats the substrate as
+      a flat surface with area L × W.
+    - Particle bed coating: When S is provided, it represents the total surface
+      area of particles to be coated within the reactor zone.
 
     Parameters
     ----------
@@ -23,10 +29,15 @@ class SpatialParticleWellMixed(DoseModel):
         Carrier gas pressure in Pa.
     T : float
         Temperature in K.
-    S : float
-        Total surface area of the particles to be coated in m².
     flow : float
         Gas flow rate to the reactor in sccm (standard cubic centimeters per minute).
+    L : float
+        Length of the spatial ALD zone (in m).
+    W : float
+        Width of the spatial ALD zone (in m).
+    S : float, optional
+        Total surface area to be coated in m². If None (default), the surface
+        area is calculated as L × W for a flat substrate.
 
     Attributes
     ----------
@@ -56,11 +67,16 @@ class SpatialParticleWellMixed(DoseModel):
         If chem has more than one reaction pathway.
     """
 
-    def __init__(self, chem, p, p0, T, S, flow, ):
+    def __init__(self, chem, p, p0, T, flow, L, W, S=None):
         if not chem.single_path:
-            raise NotImplementedError("SpatialParticleWellMixed only supports single pathway chemistry")
+            raise NotImplementedError("SpatialWellMixed only supports single pathway chemistry")
         super().__init__(chem, T, p)
-        self.S = S
+        self.W = W
+        self.L = L
+        if S is None:
+            self.S = W*L
+        else:
+            self.S = S
         self.p0 = p0
         self.flow0 = flow
         da = self.Da()
@@ -77,23 +93,28 @@ class SpatialParticleWellMixed(DoseModel):
         return kb*self.T*self.S/(self.flow()*self.chem.site_area*self.p)
 
     def saturation_curve(self):
+        """Return the saturation curve as a function of the web velocity"""
+        
         self.base_model.Da = self.Da()
-        t, cov = self.base_model.saturation_curve()
-        return t*self.t0(), cov
+        tmax = max(5, 10/self.base_model.Da)
+        t, cov = self.base_model.saturation_curve(tmax=tmax)
+
+        if t[0] == 0:
+            t = t[1:]
+            cov = cov[1:]
+        return self.L/(t*self.t0()), cov
     
-    def run(self, tdose=None, dt=None):
+    def run(self, umax=None, du=None):
         self.base_model.Da = self.Da()
-        if tdose is None:
+        if umax is None:
             t, cov, x = self.base_model.run()
 
         else:
-            trun = tdose/self.t0()
-            if dt is None:
-                dtrun = 0.01
-            else:
-                dtrun = dt/self.t0()
+            if du is None:
+                du = 0.001*umax
+            trun = self.L/du/self.t0()
+            dtrun = self.L/(umax*self.t0())
             t, cov, x = self.base_model.run(trun, dtrun)
             
-        return t*self.t0(), cov, x
-
+        return self.L/(t*self.t0()), cov, x
 

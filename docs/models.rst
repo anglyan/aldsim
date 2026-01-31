@@ -132,21 +132,79 @@ This model considers a perfectly stirred reactor model for particle coating usin
 
 .. code-block:: python
 
-    from aldsim import Precursor, ALDchem
-    from aldsim.models import RotatingDrum
+   from aldsim import Precursor, ALDchem
+   from aldsim.models import RotatingDrum
 
-    # Define precursor and surface chemistry
-    prec = Precursor(mass=150.0)
-    chem = ALDchem(prec, nsites=1e19, beta0=1e-3, dm=1.0)
+   prec = Precursor(mass=150.0)
+   nsites = 1e19
+   p_stick1 = 1e-3
+   chem = ALDchem(prec, nsites, p_stick1)
 
-    # Create the RotatingDrum model
-    # p: precursor partial pressure (Pa), p0: carrier gas pressure (Pa)
-    # T: temperature (K), S: total particle surface area (m²), flow: gas flow (sccm)
-    model = RotatingDrum(chem, p=13.2, p0=100, T=500, S=10, flow=60)
+   # Create the RotatingDrum model
+   # p: precursor partial pressure (Pa), p0: carrier gas pressure (Pa)
+   # T: temperature (K), S: total particle surface area (m²), flow: gas flow (sccm)
+   model = RotatingDrum(chem, p=0.1*1e5/760, p0=1e2, T=500,
+                  S=1e1, flow=60)
 
-    # Generate the saturation curve
-    time, coverage = model.saturation_curve()
+   t, theta = model.saturation_curve()
+
+.. figure:: _static/example_rotatingdrum.png
+   :width: 60%
+
+   Saturation curve for the RotatingDrum model.
+
 
 .. todo::
 
    Add support for soft saturating ALD processes.
+
+
+Spatial ALD reactor model
+-------------------------
+
+.. note::
+
+   The ``SpatialWellMixed`` model is currently implemented
+   for ALD surface kinetics with a single reaction pathway only. Use ``ALDchem``
+   for the surface chemistry definition.
+
+Model for ALD coating in a spatial reactor using a well-stirred precursor approximation.
+This model supports two configurations:
+
+* **Flat surface coating**: When ``S`` is ``None``, the model treats the substrate as
+  a flat surface with area L × W (e.g., roll-to-roll coating of flexible substrates).
+* **Particle bed coating**: When ``S`` is provided, it represents the total surface
+  area of particles to be coated within the reactor zone.
+
+The saturation curve is expressed as a function of web/substrate velocity:
+
+.. code-block:: python
+
+   from aldsim import Precursor, ALDchem
+   from aldsim.models import SpatialWellMixed
+   import matplotlib.pyplot as pt
+
+   # Define precursor and surface chemistry
+   prec = Precursor(mass=150.0)
+   chem = ALDchem(prec, nsites=1e19, p_stick1=1e-3)
+
+   # Create the SpatialWellMixed model for flat surface coating
+   # p: precursor partial pressure (Pa), p0: carrier gas pressure (Pa)
+   # T: temperature (K), flow: gas flow (sccm)
+   # L: zone length (m), W: zone width (m)
+   model = SpatialWellMixed(chem, p=13.2, p0=100, T=500,
+                            flow=60, L=0.02, W=0.1)
+
+   # Generate saturation curve as function of web velocity
+   u, theta, x = model.run(umax=10)
+
+   # Plot the saturation curve
+   pt.semilogx(u, theta)
+   pt.xlabel("Web velocity, m/s")
+   pt.ylabel("Fractional surface coverage")
+   pt.show()
+
+.. figure:: _static/example_spatialwellmixed.png
+   :width: 60%
+
+   Saturation curve for the SpatialWellMixed model showing coverage vs web velocity.

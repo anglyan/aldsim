@@ -14,6 +14,10 @@ model = RotatingDrum(chem, p=0.1*1e5/760, p0=1e2, T=500,
 
 t, theta = model.saturation_curve()
 
+# Plot the saturation curve
 pt.plot(t, theta)
+pt.xlabel("Dose time, s")
+pt.ylabel("Fractional surface coverage")
+pt.savefig("example_rotatingdrum.png", dpi=300)
 pt.show()
 
