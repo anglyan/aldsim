@@ -30,8 +30,9 @@ Contents
    intro.md
    ald.md
    tutorial.md
-   example.ipynb
+   models.rst
    core.md
+   example.ipynb
    api
 
 

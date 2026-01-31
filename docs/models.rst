@@ -1,0 +1,125 @@
+==============================
+ Models implemented in aldsim
+==============================
+
+aldsim implements simple models of a half-cycle (i.e. single exposure) and
+models that simulate full and multiple ALD cycles.
+
+
+Single exposure models
+======================
+
+Single exposure models focus on the evolution of surface coverage with time under
+different experimental conditions. Here is a list of currently implemented and
+in development models. They are all based on models published in the literature.
+
+
+0D constant partial pressure model
+----------------------------------
+
+The ``ZeroD`` model implements the simplest possible case in ALD: the evolution of
+surface coverage as a function of exposure for a constant partial pressure pulse:
+
+
+.. code-block:: python
+
+    from aldsim import Precursor, ALDchem
+    from aldsim.models import ZeroD
+    import matplotlib.pyplot as pt
+
+    # Define a precursor (TMA with molecular mass in g/mol)
+    tma = Precursor('TMA', mass=144.17)
+
+    # Define surface kinetics with ideal Langmuir behavior
+    kinetics = ALDchem(prec=tma, nsites=1e19, p_stick1=0.01)
+
+    # Create the ZeroD model at 200°C and 100 Pa
+    model = ZeroD(chem=kinetics, T=473.15, p=100)
+
+    # Generate the saturation curve
+    time, coverage = model.saturation_curve()
+
+    # Plot the saturation curve
+    pt.plot(time, coverage)
+    pt.xlabel("Dose time, s")
+    pt.ylabel("Fractional surface coverage")
+    pt.show()
+
+.. figure:: _static/example_zerod.png
+   :width: 50%
+
+   Saturation curve for the ZeroD model.
+
+
+Particle ALD models
+-------------------
+
+.. note::
+
+   The ``FluidizedBed`` and ``RotatingDrum`` models are currently implemented
+   for ALD surface kinetics with a single reaction pathway only. Use ``ALDchem``
+   for the surface chemistry definition.
+
+
+ALD of particles in fluidized bed reactors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The model for ALD in a fluidized bed reactor is directly implemented from the works:
+
+* `Scalable synthesis of supported catalysts using fluidized bed atomic layer
+  deposition <https://doi.org/10.1116/6.0001891>`_
+
+* `Modeling scale-up of particle coating by atomic layer deposition
+  <https://doi.org/10.1116/6.0004006>`_. A preprint is available in `arXiv <https://arxiv.org/abs/2408.13116>`_
+
+This model considers a perfectly mixed column of particles and a plug flow model for precursor
+transport across the column:
+
+.. code-block:: python
+
+    from aldsim import Precursor, ALDchem
+    from aldsim.models import FluidizedBed
+
+    # Define precursor and surface chemistry
+    prec = Precursor(mass=150.0)
+    chem = ALDchem(prec, nsites=1e19, beta0=1e-3, dm=1.0)
+
+    # Create the FluidizedBed model
+    # p: precursor partial pressure (Pa), p0: carrier gas pressure (Pa)
+    # T: temperature (K), S: total particle surface area (m²), flow: gas flow (sccm)
+    model = FluidizedBed(chem, p=13.2, p0=100, T=500, S=10, flow=60)
+
+    # Generate the saturation curve
+    time, coverage = model.saturation_curve()
+
+
+ALD of particles in a rotating drum reactor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Model for particle coating on a well-stirred environment as described in:
+
+* `Analytic expressions for atomic layer deposition: Coverage, throughput, and materials
+  utilization in cross-flow, particle coating, and spatial atomic layer deposition <https://doi.org/10.1116/1.4867441>`_
+
+* `Modeling scale-up of particle coating by atomic layer deposition
+  <https://doi.org/10.1116/6.0004006>`_. A preprint is available in `arXiv <https://arxiv.org/abs/2408.13116>`_
+
+This model considers a perfectly stirred reactor model for particle coating using ALD:
+
+.. code-block:: python
+
+    from aldsim import Precursor, ALDchem
+    from aldsim.models import RotatingDrum
+
+    # Define precursor and surface chemistry
+    prec = Precursor(mass=150.0)
+    chem = ALDchem(prec, nsites=1e19, beta0=1e-3, dm=1.0)
+
+    # Create the RotatingDrum model
+    # p: precursor partial pressure (Pa), p0: carrier gas pressure (Pa)
+    # T: temperature (K), S: total particle surface area (m²), flow: gas flow (sccm)
+    model = RotatingDrum(chem, p=13.2, p0=100, T=500, S=10, flow=60)
+
+    # Generate the saturation curve
+    time, coverage = model.saturation_curve()
+
