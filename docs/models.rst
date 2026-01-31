@@ -46,23 +46,19 @@ surface coverage as a function of exposure for a constant partial pressure pulse
     pt.show()
 
 .. figure:: _static/example_zerod.png
-   :width: 50%
+   :width: 60%
 
    Saturation curve for the ZeroD model.
 
 
-Particle ALD models
--------------------
+ALD of particles in fluidized bed reactors
+------------------------------------------
 
 .. note::
 
-   The ``FluidizedBed`` and ``RotatingDrum`` models are currently implemented
+   The ``FluidizedBed``  model is currently implemented
    for ALD surface kinetics with a single reaction pathway only. Use ``ALDchem``
    for the surface chemistry definition.
-
-
-ALD of particles in fluidized bed reactors
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The model for ALD in a fluidized bed reactor is directly implemented from the works:
 
@@ -79,10 +75,12 @@ transport across the column:
 
     from aldsim import Precursor, ALDchem
     from aldsim.models import FluidizedBed
+    import matplotlib.pyplot as pt
+
 
     # Define precursor and surface chemistry
-    prec = Precursor(mass=150.0)
-    chem = ALDchem(prec, nsites=1e19, beta0=1e-3, dm=1.0)
+    tma = Precursor('TMA', mass=144.17)
+    chem = ALDchem(tma, nsites=1e19, p_stick1=1e-3)
 
     # Create the FluidizedBed model
     # p: precursor partial pressure (Pa), p0: carrier gas pressure (Pa)
@@ -92,9 +90,27 @@ transport across the column:
     # Generate the saturation curve
     time, coverage = model.saturation_curve()
 
+    # Plot the saturation curve
+    pt.plot(time, coverage)
+    pt.xlabel("Dose time, s")
+    pt.ylabel("Fractional surface coverage")
+    pt.show()
+
+.. figure:: _static/example_fluidizedbed.png
+   :width: 60%
+
+   Saturation curve for the FluidizedBed model.
+
 
 ALD of particles in a rotating drum reactor
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------------------
+
+.. note::
+
+   The ``RotatingDrum``  model is currently implemented
+   for ALD surface kinetics with a single reaction pathway only. Use ``ALDchem``
+   for the surface chemistry definition.
+
 
 Model for particle coating on a well-stirred environment as described in:
 
