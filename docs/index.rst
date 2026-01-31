@@ -27,11 +27,11 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   intro.md
-   ald.md
-   tutorial.md
+   intro.rst
+   ald.rst
+   tutorial.rst
    models.rst
-   core.md
+   core.rst
    example.ipynb
    api
 
