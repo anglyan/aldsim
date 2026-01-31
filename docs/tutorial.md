@@ -88,3 +88,29 @@ model = ZeroD(ald, T=temperature.x, p=pressure.x)
 
 In order to extract the SI units, we need to use `pressure.x` and `temperature.x`. This provides a simple way of
 defining these variables in other unitt, such as degree celsius or Torr.
+
+## Example: particle coating by ALD
+
+Here we include a simple example of how to model ALD in a rotating drum reactor under a well mixed approximation.
+
+```py
+from aldsim import Precursor, ALDchem
+from aldsim.models import RotatingDrum
+
+import matplotlib.pyplot as pt
+
+prec = Precursor(mass=150.0)
+nsites = 1e19
+beta0 = 1e-3
+chem = ALDchem(prec, nsites, beta0, dm=1.0)
+model = RotatingDrum(chem, p=0.1*1e5/760, p0=1e2, T=500,
+                 S=1e1, flow=60)
+
+t, theta = model.saturation_curve()
+
+pt.plot(t, theta)
+pt.show()
+```
+
+In this example, `RotatingDrum` takes an ALDchem object, the precursor pressure, the base pressure, temperature,
+the total surface area (in square meters) and the flow to the reactor in sccm. 
