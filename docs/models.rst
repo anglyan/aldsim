@@ -101,6 +101,14 @@ transport across the column:
 
    Saturation curve for the FluidizedBed model.
 
+.. todo::
+
+   Add support for soft saturating ALD processes.
+
+.. todo::
+
+   Add support for plasma based processes.
+
 
 ALD of particles in a rotating drum reactor
 -------------------------------------------
@@ -139,3 +147,6 @@ This model considers a perfectly stirred reactor model for particle coating usin
     # Generate the saturation curve
     time, coverage = model.saturation_curve()
 
+.. todo::
+
+   Add support for soft saturating ALD processes.

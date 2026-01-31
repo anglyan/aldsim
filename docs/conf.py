@@ -22,7 +22,10 @@ release = '0.0.4'
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.viewcode',
+              'sphinx.ext.todo',
               'myst_nb']
+
+todo_include_todos = True
 
 nb_execution_mode = "off"
 

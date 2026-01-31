@@ -34,6 +34,7 @@ Contents
    core.rst
    example.ipynb
    api
+   todo.rst
 
 
 Indices and tables
