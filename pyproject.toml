@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 name = "aldsim"
 authors = [
 { name="Angel Yanguas-Gil", email="angel.yanguas@gmail.com"}]
-version = "0.0.3"
+version = "0.0.5"
 description = "Simple models for atomic layer deposition"
 readme = {file = "README.md", content-type = "text/markdown"}
 keywords = ["atomic layer deposition", "transport models", "microelectronics", "ALD",

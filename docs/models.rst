@@ -1,11 +1,4 @@
-==============================
- Models implemented in aldsim
-==============================
-
-aldsim implements simple models of a half-cycle (i.e. single exposure) and
-models that simulate full and multiple ALD cycles.
-
-
+======================
 Single exposure models
 ======================
 
@@ -174,7 +167,18 @@ This model supports two configurations:
 * **Flat surface coating**: When ``S`` is ``None``, the model treats the substrate as
   a flat surface with area L × W (e.g., roll-to-roll coating of flexible substrates).
 * **Particle bed coating**: When ``S`` is provided, it represents the total surface
-  area of particles to be coated within the reactor zone.
+  area of particles to be coated within the reactor zone. Particles are assumed to be
+  well mixed in the directions perpendicular to the movement (i.e. by vibrating bed or other
+  agitation methods)
+
+The model is described in the following papers:
+
+* `Analytic expressions for atomic layer deposition: Coverage, throughput, and materials
+  utilization in cross-flow, particle coating, and spatial atomic layer deposition <https://doi.org/10.1116/1.4867441>`_
+
+* `Modeling scale-up of particle coating by atomic layer deposition
+  <https://doi.org/10.1116/6.0004006>`_. A preprint is available in `arXiv <https://arxiv.org/abs/2408.13116>`_
+
 
 The saturation curve is expressed as a function of web/substrate velocity:
 
