@@ -3,4 +3,7 @@
 from .zerod import ZeroD
 from .batch import RotatingDrum, FluidizedBed
 from .spatial import SpatialWellMixed
+from .knudsen import KnudsenVia
+
+
 

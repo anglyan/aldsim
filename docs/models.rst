@@ -212,3 +212,50 @@ The saturation curve is expressed as a function of web/substrate velocity:
    :width: 60%
 
    Saturation curve for the SpatialWellMixed model showing coverage vs web velocity.
+
+
+ALD in high aspect ratio vias
+-----------------------------
+
+.. note::
+
+   The ``KnudsenVia`` model is currently implemented
+   for ALD surface kinetics with a single reaction pathway only. Use ``ALDchem``
+   for the surface chemistry definition.
+
+Model for ALD coating inside high aspect ratio circular vias using Knudsen
+diffusion transport. The model solves the coupled diffusion-reaction equations
+to predict coverage profiles along the via depth as a function of exposure time.
+
+.. code-block:: python
+
+    from aldsim import Precursor, ALDchem
+    from aldsim.models import KnudsenVia
+    import matplotlib.pyplot as pt
+
+    # Define a precursor (TMA with molecular mass in g/mol)
+    tma = Precursor('TMA', mass=144.17)
+
+    # Define surface kinetics with ideal Langmuir behavior
+    kinetics = ALDchem(prec=tma, nsites=1e19, p_stick1=0.01)
+
+    # Create the KnudsenVia model at 200°C, 10 Pa, and aspect ratio 200
+    model = KnudsenVia(chem=kinetics, T=473.15, p=10, AR=200)
+
+    # Generate the saturation curve
+    time, z, coverage = model.saturation_curve()
+
+    # Plot coverage profiles at different times
+    for t, c in zip(time, coverage):
+        pt.plot(z, c, label=("%4.2f s" % t))
+
+    pt.xlabel("Depth z/d")
+    pt.ylabel("Coverage")
+    pt.legend()
+    pt.show()
+
+
+.. figure:: _static/example_circularvia.png
+   :width: 60%
+
+   Saturation profiles as a function of normalized depth (z/diameter) for increasing dose times

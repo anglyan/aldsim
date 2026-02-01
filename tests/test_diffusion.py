@@ -21,13 +21,13 @@ def test_solve():
     AR = 20
     N = 40
     p_stick0 = 1e-3
-    store, store_times = solve(AR, N, p_stick0)
+    store_times, store = solve(AR, N, p_stick0)
     # Test that function executes without errors
-    assert store is not None
     assert store_times is not None
+    assert store is not None
     # Test that results are lists
-    assert isinstance(store, list)
     assert isinstance(store_times, list)
+    assert isinstance(store, list)
     # Test that store_times is not empty and contains positive values
     assert len(store_times) > 0
     assert all(t > 0 for t in store_times)
@@ -46,13 +46,13 @@ def test_solve_until():
     p_stick0 = 1e-3
     target_time = 1.0
     save_every = 0.2
-    store, store_times = solve_until(AR, N, p_stick0, target_time=target_time, save_every=save_every)
+    store_times, store = solve_until(AR, N, p_stick0, target_time=target_time, save_every=save_every)
     # Test that function executes without errors
-    assert store is not None
     assert store_times is not None
+    assert store is not None
     # Test that results are lists
-    assert isinstance(store, list)
     assert isinstance(store_times, list)
+    assert isinstance(store, list)
     # Test that store_times is not empty
     assert len(store_times) > 0
     # Test that all times are less than or equal to target_time

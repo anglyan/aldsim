@@ -14,7 +14,7 @@ FluidizedBedND
     :show-inheritance:
 
 WellMixedParticleND
---------------
+-------------------
 
 .. autoclass:: aldsim.core.particle.rotatingdrum.WellMixedParticleND
     :members:
@@ -29,10 +29,10 @@ SpatialPlugFlow
     :undoc-members:
     :show-inheritance:
 
-SpatialWellMixed
-----------------
+SpatialWellMixedND
+------------------
 
-.. autoclass:: aldsim.core.particle.spatialwellmixed.SpatialWellMixed
+.. autoclass:: aldsim.core.particle.spatialwellmixed.SpatialWellMixedND
     :members:
     :undoc-members:
     :show-inheritance:
@@ -41,10 +41,10 @@ SpatialWellMixed
 ALD in high aspect ratio features
 =================================
 
-DiffusionVia
-------------
+DiffusionViaND
+--------------
 
-.. autoclass:: aldsim.core.diffusion.DiffusionVia
+.. autoclass:: aldsim.core.diffusion.DiffusionViaND
     :members:
     :undoc-members:
     :show-inheritance:

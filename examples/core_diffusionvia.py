@@ -1,6 +1,6 @@
 #Copyright © 2024-Present, UChicago Argonne, LLC
 
-from aldsim.core.diffusion import DiffusionVia
+from aldsim.core.diffusion import DiffusionViaND
 import matplotlib.pyplot as pt
 import numpy as np
 
@@ -8,7 +8,7 @@ AR = 20
 N = 80
 dt = 0.01
 
-dv = DiffusionVia(AR, p_stick0=1e-3)
+dv = DiffusionViaND(AR, p_stick0=1e-3)
 
 coverage, times = dv.run_until_cov(max_cov=0.5, N=N, save_every=0.2, dt=dt)
 

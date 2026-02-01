@@ -60,7 +60,7 @@ def solve(AR, N, p_stick0, p_rec0=0, p_rec1=0, target_cov=0.25, time_multiplier=
                     found = True
                     target_time = time_multiplier*i
     store_times.append(i)
-    return store, store_times
+    return store_times, store
 
 
 def solve_until(AR, N, p_stick0, p_rec0=0, p_rec1=0, target_time=1.0, save_every=0.2, dt=0.01):
@@ -83,8 +83,8 @@ def solve_until(AR, N, p_stick0, p_rec0=0, p_rec1=0, target_time=1.0, save_every
 
     Returns:
         tuple: A tuple containing:
-            - store (list): List of coverage arrays at saved time points, each of size N
             - store_times (list): List of normalized times corresponding to saved profiles
+            - store (list): List of coverage arrays at saved time points, each of size N
 
     Notes:
         All time values are in normalized units.
@@ -117,7 +117,7 @@ def solve_until(AR, N, p_stick0, p_rec0=0, p_rec1=0, target_time=1.0, save_every
         store.append(cov[:-1].copy())
         store_times.append(final_time)
 
-    return store, store_times
+    return store_times, store
 
 
 def solve_until_cov(AR, N, p_stick0, p_rec0=0, p_rec1=0, target_cov=0.99, save_every=0.2, dt=0.05):
@@ -139,8 +139,8 @@ def solve_until_cov(AR, N, p_stick0, p_rec0=0, p_rec1=0, target_cov=0.99, save_e
 
     Returns:
         tuple: A tuple containing:
-            - store (list): List of coverage arrays
             - store_times (list): List of normalized times corresponding to saved profiles
+            - store (list): List of coverage arrays
 
     Notes:
         All time values are in normalized units.
@@ -174,10 +174,10 @@ def solve_until_cov(AR, N, p_stick0, p_rec0=0, p_rec1=0, target_cov=0.99, save_e
     store.append(cov[:-1].copy())
     store_times.append(final_time)
 
-    return store, store_times
+    return store_times, store
 
 
-class DiffusionVia:
+class DiffusionViaND:
     """Model for ALD in high aspect ratio circular vias.
 
     Implementation of a non-dimensional model for atomic layer deposition
@@ -215,19 +215,24 @@ class DiffusionVia:
         The recombination probability on bare sites.
     p_rec1 : float
         The recombination probability on reacted sites.
+    dz : float
+        Size of the discretized elements, normalized to the via diameter.
+        Computed as 1/nsegments.
+    nsegments : int
+        Number of discretized elements per unit aspect ratio. Default is 4.
 
     Examples
     --------
-    Create a DiffusionVia model for a via with aspect ratio 10:
+    Create a DiffusionViaND model for a via with aspect ratio 10:
 
-    >>> model = DiffusionVia(AR=10, p_stick0=0.05)
-    >>> coverage, times = model.run(max_time=2.0)
+    >>> model = DiffusionViaND(AR=10, p_stick0=0.05)
+    >>> times, coverage = model.run(max_time=2.0)
     >>> print(f"Final mean coverage: {coverage[-1].mean():.3f}")
 
     Model with recombination effects:
 
-    >>> model = DiffusionVia(AR=20, p_stick0=0.03, p_rec0=0.01, p_rec1=0.05)
-    >>> coverage, times = model.run_until_cov(max_cov=0.95)
+    >>> model = DiffusionViaND(AR=20, p_stick0=0.03, p_rec0=0.01, p_rec1=0.05)
+    >>> times, coverage = model.run_until_cov(max_cov=0.95)
     >>> print(f"Time to reach 95% coverage: {times[-1]:.3f}")
 
     Notes
@@ -249,6 +254,16 @@ class DiffusionVia:
         self.p_rec0 = p_rec0
         self.p_rec1 = p_rec1
         self._nsegments = 4
+
+    @property
+    def dz(self):
+        """size of the elements (normalized to the diameter) used to solve the transport equation"""
+        return 1/self._nsegments
+    
+    @property
+    def nsegments(self):
+        """Number of discretized elements per unit aspect ratio"""
+        return self._nsegments
 
 
     def run(self, N=None, max_time=1, save_every=0.2, dt=0.05):
@@ -281,31 +296,31 @@ class DiffusionVia:
 
         Returns
         -------
+        times : list of float
+            List of normalized times corresponding to saved coverage profiles.
+            Length matches the coverage list.
         coverage : list of ndarray
             List of coverage arrays at saved time points. Each array has
             shape (N,) representing the coverage profile along the via depth,
             from the entrance (index 0) to the bottom (index N-1). Values
             are bounded between 0 and 1.
-        times : list of float
-            List of normalized times corresponding to saved coverage profiles.
-            Length matches the coverage list.
 
         Examples
         --------
         Run simulation with default parameters:
 
-        >>> model = DiffusionVia(AR=10, p_stick0=0.05)
-        >>> coverage, times = model.run()
+        >>> model = DiffusionViaND(AR=10, p_stick0=0.05)
+        >>> times, coverage = model.run()
         >>> print(f"Number of saved profiles: {len(coverage)}")
         Number of saved profiles: 6
 
         Run with custom time parameters and higher resolution:
 
-        >>> model = DiffusionVia(AR=15, p_stick0=0.03)
-        >>> coverage, times = model.run(N=100, max_time=3.0, save_every=0.5)
+        >>> model = DiffusionViaND(AR=15, p_stick0=0.03)
+        >>> times, coverage = model.run(N=100, max_time=3.0, save_every=0.5)
         >>> final_coverage = coverage[-1]
         >>> print(f"Coverage at bottom: {final_coverage[-1]:.3f}")
-0
+
         See Also
         --------
         run_until_cov : Run simulation until target coverage is reached
@@ -347,28 +362,28 @@ class DiffusionVia:
 
         Returns
         -------
+        times : list of float
+            List of normalized times corresponding to saved coverage profiles.
+            Times increase monotonically. Length matches the coverage list.
         coverage : list of ndarray
             List of coverage arrays at saved coverage intervals. Each array
             has shape (N,) representing the coverage profile along the via
             depth, from the entrance (index 0) to the bottom (index N-1).
             Values are bounded between 0 and 1.
-        times : list of float
-            List of normalized times corresponding to saved coverage profiles.
-            Times increase monotonically. Length matches the coverage list.
 
         Examples
         --------
         Run simulation until 90% mean coverage:
 
-        >>> model = DiffusionVia(AR=10, p_stick0=0.5)
-        >>> coverage, times = model.run_until_cov(max_cov=0.9)
+        >>> model = DiffusionViaND(AR=10, p_stick0=0.5)
+        >>> times, coverage = model.run_until_cov(max_cov=0.9)
         >>> print(f"Time to reach 90% coverage: {times[-1]:.3f}")
         Time to reach 90% coverage: 2.345
 
         Save coverage profiles every 10% increment:
 
-        >>> model = DiffusionVia(AR=15, p_stick0=0.3, p_rec0=0.1)
-        >>> coverage, times = model.run_until_cov(max_cov=0.95, save_every=0.1)
+        >>> model = DiffusionViaND(AR=15, p_stick0=0.3, p_rec0=0.1)
+        >>> times, coverage = model.run_until_cov(max_cov=0.95, save_every=0.1)
 
         See Also
         --------
